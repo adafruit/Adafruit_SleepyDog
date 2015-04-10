@@ -1,2 +1,3 @@
-# Adafruit_Watchdog
-Arduino library to enable the watchdog timer for more reliable sketch execution.
+# Adafruit SleepyDog Arduino Library
+
+Arduino library to use the watchdog timer for system reset and low power sleep.
