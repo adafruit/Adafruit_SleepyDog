@@ -4,7 +4,7 @@
 //
 // Author: Tony DiCola
 
-#include <Adafruit_Watchdog.h>
+#include <Adafruit_SleepyDog.h>
 
 void setup() {
   Serial.begin(115200);

@@ -1,5 +1,5 @@
-#ifndef ADAFRUIT_WATCHDOG_H
-#define ADAFRUIT_WATCHDOG_H
+#ifndef ADAFRUIT_SLEEPYDOG_H
+#define ADAFRUIT_SLEEPYDOG_H
 
 // Platform-specific code goes below.  Each #ifdef should check for the presence
 // of their platform and pull in the appropriate watchdog implementation type,
