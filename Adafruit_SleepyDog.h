@@ -7,6 +7,10 @@
 #if defined(ARDUINO_ARCH_AVR) || defined(__AVR__)
   #include "utility/WatchdogAVR.h"
   typedef WatchdogAVR WatchdogType;
+#elif defined(ARDUINO_ARCH_SAMD)
+  // Arduino Zero / ATSAMD series CPU watchdog support.
+  #include "utility/WatchdogSAMD.h"
+  typedef WatchdogSAMD WatchdogType;
 #else
   #error Unsupported platform for the Adafruit Watchdog library!
 #endif
