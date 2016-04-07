@@ -8,6 +8,7 @@
 
 void setup() {
   Serial.begin(115200);
+  while (!Serial) ; // wait for Arduino Serial Monitor (native USB boards)
   Serial.println("Adafruit Watchdog Library Sleep Demo!");
   Serial.println();
 }
