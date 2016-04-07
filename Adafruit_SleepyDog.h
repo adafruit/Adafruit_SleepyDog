@@ -15,6 +15,10 @@
   // Teensy 3.x watchdog support.
   #include "utility/WatchdogKinetisK.h"
   typedef WatchdogKinetisKseries WatchdogType;
+#elif defined(__MKL26Z64__)
+  // Teensy LC watchdog support.
+  #include "utility/WatchdogKinetisL.h"
+  typedef WatchdogKinetisLseries WatchdogType;
 #else
   #error Unsupported platform for the Adafruit Watchdog library!
 #endif
