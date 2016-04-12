@@ -62,6 +62,13 @@ int WatchdogAVR::sleep(int maxPeriodMS) {
     // Critical section finished, re-enable interrupts.
     sei();
 
+    // Disable USB if it exists
+    #ifdef USBCON
+      USBCON |= _BV(FRZCLK);  //freeze USB clock
+      PLLCSR &= ~_BV(PLLE);   // turn off USB PLL
+      USBCON &= ~_BV(USBE);   // disable USB
+    #endif
+
     // Set full power-down sleep mode and go to sleep.
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);
     sleep_mode();
