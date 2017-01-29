@@ -14,11 +14,11 @@ void setup() {
 
   // First a normal example of using the watchdog timer.
   // Enable the watchdog by calling Watchdog.enable() as below.  This will turn
-  // on the watchdog timer and use the maximum countdown before reseting the
-  // Arduino.  The value of this delay before reset (in milliseconds) is returned.
+  // on the watchdog timer with a ~4 second timeout before reseting the Arduino.
+  // The estimated actual milliseconds before reset (in milliseconds) is returned.
   // Make sure to reset the watchdog before the countdown expires or the Arduino
   // will reset!
-  int countdownMS = Watchdog.enable();
+  int countdownMS = Watchdog.enable(4000);
   Serial.print("Enabled the watchdog with max countdown of ");
   Serial.print(countdownMS, DEC);
   Serial.println(" milliseconds!");
@@ -30,7 +30,7 @@ void setup() {
     Serial.print("Loop #"); Serial.println(i, DEC);
     delay(1000);
     // Reset the watchdog with every loop to make sure the sketch keeps running.
-    // If you comment out this call watch what happens after about 8 iterations!
+    // If you comment out this call watch what happens after about 4 iterations!
     Watchdog.reset();
   }
   Serial.println();
@@ -57,5 +57,6 @@ void setup() {
 void loop() {
   // We'll never actually get to the loop because the watchdog will reset in
   // the setup function.
+  Serial.println("You shouldn't see this message.");
   delay(1000);
 }
