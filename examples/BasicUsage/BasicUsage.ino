@@ -8,16 +8,17 @@
 
 void setup() {
   Serial.begin(115200);
-  while (!Serial) ; // wait for Arduino Serial Monitor (native USB boards)
+  while(!Serial); // wait for Arduino Serial Monitor (native USB boards)
   Serial.println("Adafruit Watchdog Library Demo!");
   Serial.println();
 
   // First a normal example of using the watchdog timer.
-  // Enable the watchdog by calling Watchdog.enable() as below.  This will turn
-  // on the watchdog timer with a ~4 second timeout before reseting the Arduino.
-  // The estimated actual milliseconds before reset (in milliseconds) is returned.
-  // Make sure to reset the watchdog before the countdown expires or the Arduino
-  // will reset!
+  // Enable the watchdog by calling Watchdog.enable() as below.
+  // This will turn on the watchdog timer with a ~4 second timeout
+  // before reseting the Arduino. The estimated actual milliseconds
+  // before reset (in milliseconds) is returned.
+  // Make sure to reset the watchdog before the countdown expires or
+  // the Arduino will reset!
   int countdownMS = Watchdog.enable(4000);
   Serial.print("Enabled the watchdog with max countdown of ");
   Serial.print(countdownMS, DEC);
@@ -26,11 +27,11 @@ void setup() {
 
   // Now loop a few times and periodically reset the watchdog.
   Serial.println("Looping ten times while resetting the watchdog...");
-  for (int i = 1; i <= 10; ++i) {
+  for(int i = 1; i <= 10; ++i) {
     Serial.print("Loop #"); Serial.println(i, DEC);
     delay(1000);
-    // Reset the watchdog with every loop to make sure the sketch keeps running.
-    // If you comment out this call watch what happens after about 4 iterations!
+    // Reset watchdog with every loop to make sure the sketch keeps running.
+    // If you comment out this call watch what happens in about 4 iterations!
     Watchdog.reset();
   }
   Serial.println();
@@ -39,11 +40,11 @@ void setup() {
   Watchdog.disable();
 
   // Finally demonstrate the watchdog resetting by enabling it for a shorter
-  // period of time and waiting a long time without a reset.  Notice you can pass
-  // a _maximum_ countdown time (in milliseconds) to the enable call.  The library
-  // will try to use that value as the countdown, but it might pick a smaller
-  // value if the hardware doesn't support it.  The actual countdown value will
-  // be returned so you can see what it is.
+  // period of time and waiting a long time without a reset.  Notice you can
+  // pass a _maximum_ countdown time (in milliseconds) to the enable call.
+  // The library will try to use that value as the countdown, but it might
+  // pick a smaller value if the hardware doesn't support it.  The actual
+  // countdown value will be returned so you can see what it is.
   countdownMS = Watchdog.enable(4000);
   Serial.print("Get ready, the watchdog will reset in ");
   Serial.print(countdownMS, DEC);
