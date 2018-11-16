@@ -22,9 +22,16 @@ int WatchdogSAMD::enable(int maxPeriodMS, bool isForSleep) {
 
     if(!_initialized) _initialize_wdt();
 
-    WDT->CTRL.reg = 0; // Disable watchdog for config
-    while(WDT->STATUS.bit.SYNCBUSY);
-
+    #if defined(__SAMD51__)
+		WDT->CTRLA.reg = 0; // Disable watchdog for config
+		while(WDT->SYNCBUSY.reg);
+	#else
+	
+		WDT->CTRL.reg = 0; // Disable watchdog for config
+		while(WDT->STATUS.bit.SYNCBUSY);
+	
+	#endif
+    
     // You'll see some occasional conversion here compensating between
     // milliseconds (1000 Hz) and WDT clock cycles (~1024 Hz).  The low-
     // power oscillator used by the WDT ostensibly runs at 32,768 Hz with
@@ -93,25 +100,48 @@ int WatchdogSAMD::enable(int maxPeriodMS, bool isForSleep) {
     // function (later in this file) explicitly passes 'true' to get the
     // alternate behavior.
 
-    if(isForSleep) {
-        WDT->INTENSET.bit.EW   = 1;      // Enable early warning interrupt
-        WDT->CONFIG.bit.PER    = 0xB;    // Period = max
-        WDT->CONFIG.bit.WINDOW = bits;   // Set time of interrupt
-        WDT->CTRL.bit.WEN      = 1;      // Enable window mode
-        while(WDT->STATUS.bit.SYNCBUSY); // Sync CTRL write
-    } else {
-        WDT->INTENCLR.bit.EW   = 1;      // Disable early warning interrupt
-        WDT->CONFIG.bit.PER    = bits;   // Set period for chip reset
-        WDT->CTRL.bit.WEN      = 0;      // Disable window mode
-        while(WDT->STATUS.bit.SYNCBUSY); // Sync CTRL write
-    }
+    #if defined(__SAMD51__)
+		if(isForSleep) {
+			WDT->INTENSET.bit.EW   = 1;      // Enable early warning interrupt
+			WDT->CONFIG.bit.PER    = 0xB;    // Period = max
+			WDT->CONFIG.bit.WINDOW = bits;   // Set time of interrupt
+			WDT->CTRLA.bit.WEN      = 1;      // Enable window mode
+			while(WDT->SYNCBUSY.reg); // Sync CTRL write
+		} else {
+			WDT->INTENCLR.bit.EW   = 1;      // Disable early warning interrupt
+			WDT->CONFIG.bit.PER    = bits;   // Set period for chip reset
+			WDT->CTRLA.bit.WEN      = 0;      // Disable window mode
+			while(WDT->SYNCBUSY.reg); // Sync CTRL write
+		}
+		
+		reset();                  // Clear watchdog interval
+		
+		WDT->CTRLA.bit.ENABLE = 1; // Start watchdog now!
+		while(WDT->SYNCBUSY.reg);
+	
+	#else
+	
+		if(isForSleep) {
+			WDT->INTENSET.bit.EW   = 1;      // Enable early warning interrupt
+			WDT->CONFIG.bit.PER    = 0xB;    // Period = max
+			WDT->CONFIG.bit.WINDOW = bits;   // Set time of interrupt
+			WDT->CTRL.bit.WEN      = 1;      // Enable window mode
+			while(WDT->STATUS.bit.SYNCBUSY); // Sync CTRL write
+			} else {
+			WDT->INTENCLR.bit.EW   = 1;      // Disable early warning interrupt
+			WDT->CONFIG.bit.PER    = bits;   // Set period for chip reset
+			WDT->CTRL.bit.WEN      = 0;      // Disable window mode
+			while(WDT->STATUS.bit.SYNCBUSY); // Sync CTRL write
+		}
 
+		reset();                  // Clear watchdog interval
+	
+		WDT->CTRL.bit.ENABLE = 1; // Start watchdog now!
+		while(WDT->STATUS.bit.SYNCBUSY);
+	
+	#endif
     actualMS = (cycles * 1000L + 512) / 1024; // WDT cycles -> ms
-
-    reset();                  // Clear watchdog interval
-    WDT->CTRL.bit.ENABLE = 1; // Start watchdog now!
-    while(WDT->STATUS.bit.SYNCBUSY);
-
+    
     return actualMS;
 }
 
@@ -119,19 +149,37 @@ void WatchdogSAMD::reset() {
     // Write the watchdog clear key value (0xA5) to the watchdog
     // clear register to clear the watchdog timer and reset it.
     WDT->CLEAR.reg = WDT_CLEAR_CLEAR_KEY;
-    while(WDT->STATUS.bit.SYNCBUSY);
+	
+	#if defined(__SAMD51__)
+		while(WDT->SYNCBUSY.reg);
+	#else
+		while(WDT->STATUS.bit.SYNCBUSY);
+	#endif
 }
 
 void WatchdogSAMD::disable() {
-    WDT->CTRL.bit.ENABLE = 0;
-    while(WDT->STATUS.bit.SYNCBUSY);
+    #if defined(__SAMD51__)
+		WDT->CTRLA.bit.ENABLE = 0;
+		while(WDT->SYNCBUSY.reg);
+	#else
+		WDT->CTRL.bit.ENABLE = 0;
+		while(WDT->STATUS.bit.SYNCBUSY);
+	#endif
 }
 
 void WDT_Handler(void) {
     // ISR for watchdog early warning, DO NOT RENAME!
-    WDT->CTRL.bit.ENABLE = 0;        // Disable watchdog
-    while(WDT->STATUS.bit.SYNCBUSY); // Sync CTRL write
-    WDT->INTFLAG.bit.EW  = 1;        // Clear interrupt flag
+    #if defined(__SAMD51__)
+		WDT->CTRLA.bit.ENABLE = 0;        // Disable watchdog
+		while(WDT->SYNCBUSY.reg);
+	
+	#else
+		WDT->CTRL.bit.ENABLE = 0;        // Disable watchdog
+		while(WDT->STATUS.bit.SYNCBUSY); // Sync CTRL write
+	
+	#endif
+	
+	WDT->INTFLAG.bit.EW  = 1;        // Clear interrupt flag
 }
 
 int WatchdogSAMD::sleep(int maxPeriodMS) {
@@ -149,6 +197,23 @@ void WatchdogSAMD::_initialize_wdt() {
     // One-time initialization of watchdog timer.
     // Insights from rickrlh and rbrucemtl in Arduino forum!
 
+    #if defined(__SAMD51__)
+	
+		// SAMD51 WDT uses OSCULP32k as input clock now
+		// section: 20.5.3
+		OSC32KCTRL->OSCULP32K.reg =		OSC32KCTRL_OSCULP32K_EN1K |
+										OSC32KCTRL_OSCULP32K_EN32K;
+
+		// Enable WDT early-warning interrupt
+		NVIC_DisableIRQ(WDT_IRQn);
+		NVIC_ClearPendingIRQ(WDT_IRQn);
+		NVIC_SetPriority(WDT_IRQn, 0); // Top priority
+		NVIC_EnableIRQ(WDT_IRQn);
+
+		while(WDT->SYNCBUSY.reg);
+	
+	#else
+    
     // Generic clock generator 2, divisor = 32 (2^(DIV+1))
     GCLK->GENDIV.reg = GCLK_GENDIV_ID(2) | GCLK_GENDIV_DIV(4);
     // Enable clock generator 2 using low-power 32KHz oscillator.
@@ -168,7 +233,8 @@ void WatchdogSAMD::_initialize_wdt() {
     NVIC_ClearPendingIRQ(WDT_IRQn);
     NVIC_SetPriority(WDT_IRQn, 0); // Top priority
     NVIC_EnableIRQ(WDT_IRQn);
-
+    #endif
+    
     _initialized = true;
 }
 
