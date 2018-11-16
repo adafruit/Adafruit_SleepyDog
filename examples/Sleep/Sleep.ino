@@ -30,6 +30,10 @@ void loop() {
   // milliseconds).
   // int sleepMS = Watchdog.sleep(1000);  // Sleep for up to 1 second.
 
+  // For 32u4 based boards which lose the USB connection, reattach the connection.
+  // The host will also need to reattach to the Serial monitor.
+  // USBDevice.attach();
+
   Serial.print("I'm awake now!  I slept for ");
   Serial.print(sleepMS, DEC);
   Serial.println(" milliseconds.");
