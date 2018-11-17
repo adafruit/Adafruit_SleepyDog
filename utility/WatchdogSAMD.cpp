@@ -98,15 +98,17 @@ int WatchdogSAMD::enable(int maxPeriodMS, bool isForSleep) {
 
 #if defined(__SAMD51__)
     if(isForSleep) {
-        WDT->INTENSET.bit.EW   = 1;      // Enable early warning interrupt
-        WDT->CONFIG.bit.PER    = 0xB;    // Period = max
-        WDT->CONFIG.bit.WINDOW = bits;   // Set time of interrupt
-        WDT->CTRLA.bit.WEN     = 1;      // Enable window mode
+        WDT->INTFLAG.bit.EW      = 1;    // Clear interrupt flag
+        WDT->INTENSET.bit.EW     = 1;    // Enable early warning interrupt
+        WDT->CONFIG.bit.PER      = 0xB;  // Period = max
+        WDT->CONFIG.bit.WINDOW   = bits; // Set time of interrupt
+        WDT->EWCTRL.bit.EWOFFSET = 0x0;  // Early warning offset
+        WDT->CTRLA.bit.WEN       = 1;    // Enable window mode
         while(WDT->SYNCBUSY.reg);        // Sync CTRL write
     } else {
-        WDT->INTENCLR.bit.EW   = 1;      // Disable early warning interrupt
-        WDT->CONFIG.bit.PER    = bits;   // Set period for chip reset
-        WDT->CTRLA.bit.WEN     = 0;      // Disable window mode
+        WDT->INTENCLR.bit.EW     = 1;    // Disable early warning interrupt
+        WDT->CONFIG.bit.PER      = bits; // Set period for chip reset
+        WDT->CTRLA.bit.WEN       = 0;    // Disable window mode
         while(WDT->SYNCBUSY.reg);        // Sync CTRL write
     }
 
@@ -164,7 +166,6 @@ void WDT_Handler(void) {
 #else
     WDT->CTRL.bit.ENABLE = 0;        // Disable watchdog
     while(WDT->STATUS.bit.SYNCBUSY); // Sync CTRL write
-
 #endif
     WDT->INTFLAG.bit.EW  = 1;        // Clear interrupt flag
 }
@@ -179,7 +180,12 @@ int WatchdogSAMD::sleep(int maxPeriodMS) {
     // Don't fully power down flash when in sleep
     NVMCTRL->CTRLB.bit.SLEEPPRM = NVMCTRL_CTRLB_SLEEPPRM_DISABLED_Val;
 #endif
+#if defined(__SAMD51__)
+    PM->SLEEPCFG.bit.SLEEPMODE = 0x4;         // Standby sleep mode
+    while(PM->SLEEPCFG.bit.SLEEPMODE != 0x4); // Wait for it to take
+#else
     SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+#endif
 
     __DSB(); // Data sync to ensure outgoing memory accesses complete
     __WFI(); // Wait for interrupt (places device in sleep mode)
@@ -202,8 +208,8 @@ void WatchdogSAMD::_initialize_wdt() {
 #if defined(__SAMD51__)
     // SAMD51 WDT uses OSCULP32k as input clock now
     // section: 20.5.3
-    OSC32KCTRL->OSCULP32K.reg =
-      OSC32KCTRL_OSCULP32K_EN1K | OSC32KCTRL_OSCULP32K_EN32K;
+    OSC32KCTRL->OSCULP32K.bit.EN1K  = 1; // Enable out 1K (for WDT)
+    OSC32KCTRL->OSCULP32K.bit.EN32K = 0; // Disable out 32K
 
     // Enable WDT early-warning interrupt
     NVIC_DisableIRQ(WDT_IRQn);
