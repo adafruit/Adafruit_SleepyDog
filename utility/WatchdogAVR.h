@@ -1,6 +1,18 @@
 #ifndef WATCHDOGAVR_H
 #define WATCHDOGAVR_H
 
+	
+// Allows the WDT ISR to know if it's called from the sleep function or if
+// a reset is to be performed.
+// The 16 bits holds a "magic value" to prevent reset. This is safer than 
+// using a boolean in case the memory gets trashed.
+// This is defined as global to allow access by the ISR
+
+#include <stdint.h>
+
+static uint16_t _sleepy;
+#define _MAGIC_SLEEPY ~0xDEAD
+
 class WatchdogAVR {
 public:
     WatchdogAVR():
@@ -43,5 +55,8 @@ private:
     // timer was enabled.
     int _wdto;
 };
+
+
+
 
 #endif

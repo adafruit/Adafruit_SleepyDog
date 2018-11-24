@@ -8,31 +8,47 @@
 #include <avr/sleep.h>
 #include <avr/wdt.h>
 
+#if ARDUINO >= 100
+  #include "Arduino.h"
+#else
+  #include "WProgram.h"
+#endif
+
 #include "WatchdogAVR.h"
+
+void(* resetFunc) (void) = 0;
 
 // Define watchdog timer interrupt.
 ISR(WDT_vect) {
     // Nothing needs to be done, however interrupt handler must be defined to
     // prevent a reset.
+if (_sleepy != _MAGIC_SLEEPY) {
+   MCUSR = 0;
+   wdt_disable();	
+   resetFunc(); 
+   }	
 }
 
 int WatchdogAVR::enable(int maxPeriodMS) {
     // Pick the closest appropriate watchdog timer value.
-    int actualMS;
-    _setPeriod(maxPeriodMS, _wdto, actualMS);
+	int actualMS;
+    _setPeriod(abs(maxPeriodMS), _wdto, actualMS);
     // Enable the watchdog and return the actual countdown value.
     wdt_enable(_wdto);
+    if (maxPeriodMS<0) WDTCSR |= (1<<WDIE);             // Enable only watchdog interrupts.
     return actualMS;
 }
 
 void WatchdogAVR::reset() {
     // Reset the watchdog.
+	_sleepy=0;
     wdt_reset();
 }
 
 void WatchdogAVR::disable() {
     // Disable the watchdog and clear any saved watchdog timer value.
     wdt_disable();
+	_sleepy=0;
     _wdto = -1;
 }
 
@@ -70,6 +86,7 @@ int WatchdogAVR::sleep(int maxPeriodMS) {
 
     // Set full power-down sleep mode and go to sleep.
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+    _sleepy=_MAGIC_SLEEPY; // The only place where it should get this value
     sleep_mode();
 
     // Chip is now asleep!
@@ -77,6 +94,7 @@ int WatchdogAVR::sleep(int maxPeriodMS) {
     // Once awakened by the watchdog execution resumes here.
     // Start by disabling sleep.
     sleep_disable();
+    _sleepy=0;
 
     // Check if user had the watchdog enabled before sleep and re-enable it.
     if(_wdto != -1) wdt_enable(_wdto);
@@ -86,6 +104,7 @@ int WatchdogAVR::sleep(int maxPeriodMS) {
 }
 
 void WatchdogAVR::_setPeriod(int maxMS, int &wdto, int &actualMS) {
+	_sleepy=0;
     // Note the order of these if statements from highest to lowest  is 
     // important so that control flow cascades down to the right value based
     // on its position in the range of discrete timeouts.
