@@ -20,13 +20,14 @@ void(* resetFunc) (void) = 0;
 
 // Define watchdog timer interrupt.
 ISR(WDT_vect) {
-    // Nothing needs to be done, however interrupt handler must be defined to
-    // prevent a reset.
-if (_sleepy != _MAGIC_SLEEPY) {
-   MCUSR = 0;
-   wdt_disable();	
-   resetFunc(); 
-   }	
+    
+	if (_sleepy != _MAGIC_SLEEPY) {  
+		// Disable watchdog and soft reset
+		MCUSR = 0;
+		wdt_disable();	
+		resetFunc(); 
+		}	
+	_sleepy=0; // Terminate sleep mode
 }
 
 int WatchdogAVR::enable(int maxPeriodMS) {
@@ -36,13 +37,14 @@ int WatchdogAVR::enable(int maxPeriodMS) {
     // Enable the watchdog and return the actual countdown value.
     wdt_enable(_wdto);
     if (maxPeriodMS<0) WDTCSR |= (1<<WDIE);             // Enable only watchdog interrupts.
+	_sleepy=0;
     return actualMS;
 }
 
 void WatchdogAVR::reset() {
     // Reset the watchdog.
-	_sleepy=0;
     wdt_reset();
+	_sleepy=0;
 }
 
 void WatchdogAVR::disable() {
@@ -94,7 +96,6 @@ int WatchdogAVR::sleep(int maxPeriodMS) {
     // Once awakened by the watchdog execution resumes here.
     // Start by disabling sleep.
     sleep_disable();
-    _sleepy=0;
 
     // Check if user had the watchdog enabled before sleep and re-enable it.
     if(_wdto != -1) wdt_enable(_wdto);
@@ -104,8 +105,7 @@ int WatchdogAVR::sleep(int maxPeriodMS) {
 }
 
 void WatchdogAVR::_setPeriod(int maxMS, int &wdto, int &actualMS) {
-	_sleepy=0;
-    // Note the order of these if statements from highest to lowest  is 
+	// Note the order of these if statements from highest to lowest  is 
     // important so that control flow cascades down to the right value based
     // on its position in the range of discrete timeouts.
     if((maxMS >= 8000) || (maxMS == 0)) {
