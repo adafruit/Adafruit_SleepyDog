@@ -21,6 +21,11 @@ int WatchdogSAMD::enable(int maxPeriodMS, bool isForSleep) {
     if(!_initialized) _initialize_wdt();
 
 #if defined(__SAMD51__)
+    USB->DEVICE.CTRLA.bit.ENABLE = 0;         // Disable the USB peripheral
+    while(USB->DEVICE.SYNCBUSY.bit.ENABLE);   // Wait for synchronization
+    USB->DEVICE.CTRLA.bit.RUNSTDBY = 0;       // Deactivate run on standby
+    USB->DEVICE.CTRLA.bit.ENABLE = 1;         // Enable USB peripheral
+    while(USB->DEVICE.SYNCBUSY.bit.ENABLE);   // Wait for synchronization
     WDT->CTRLA.reg = 0; // Disable watchdog for config
     while(WDT->SYNCBUSY.reg);
 #else
