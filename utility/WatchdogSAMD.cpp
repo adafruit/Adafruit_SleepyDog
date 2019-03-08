@@ -218,6 +218,12 @@ void WatchdogSAMD::_initialize_wdt() {
     NVIC_EnableIRQ(WDT_IRQn);
 
     while(WDT->SYNCBUSY.reg);
+    
+    USB->DEVICE.CTRLA.bit.ENABLE = 0;         // Disable the USB peripheral
+    while(USB->DEVICE.SYNCBUSY.bit.ENABLE);   // Wait for synchronization
+    USB->DEVICE.CTRLA.bit.RUNSTDBY = 0;       // Deactivate run on standby
+    USB->DEVICE.CTRLA.bit.ENABLE = 1;         // Enable the USB peripheral
+    while(USB->DEVICE.SYNCBUSY.bit.ENABLE);   // Wait for synchronization
 #else
     // Generic clock generator 2, divisor = 32 (2^(DIV+1))
     GCLK->GENDIV.reg = GCLK_GENDIV_ID(2) | GCLK_GENDIV_DIV(4);
