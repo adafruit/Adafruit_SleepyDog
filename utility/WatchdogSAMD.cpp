@@ -140,12 +140,17 @@ int WatchdogSAMD::enable(int maxPeriodMS, bool isForSleep) {
 void WatchdogSAMD::reset() {
     // Write the watchdog clear key value (0xA5) to the watchdog
     // clear register to clear the watchdog timer and reset it.
-    WDT->CLEAR.reg = WDT_CLEAR_CLEAR_KEY;
 #if defined(__SAMD51__)
     while(WDT->SYNCBUSY.reg);
 #else
     while(WDT->STATUS.bit.SYNCBUSY);
 #endif
+    WDT->CLEAR.reg = WDT_CLEAR_CLEAR_KEY;
+}
+
+
+uint8_t WatchdogSAMD::resetCause() {
+  return RSTC->RCAUSE.reg;
 }
 
 void WatchdogSAMD::disable() {

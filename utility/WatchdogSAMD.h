@@ -1,6 +1,8 @@
 #ifndef WATCHDOGSAMD_H
 #define WATCHDOGSAMD_H
 
+#include <Arduino.h>
+
 class WatchdogSAMD {
 public:
     WatchdogSAMD():
@@ -21,6 +23,9 @@ public:
 
     // Reset or 'kick' the watchdog timer to prevent a reset of the device.
     void reset();
+
+    // Find out the cause of the last reset - see datasheet for bitmask
+    uint8_t resetCause();
 
     // Completely disable the watchdog timer.
     void disable();
