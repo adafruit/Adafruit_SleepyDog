@@ -150,7 +150,11 @@ void WatchdogSAMD::reset() {
 
 
 uint8_t WatchdogSAMD::resetCause() {
+#if defined(__SAMD51__)
   return RSTC->RCAUSE.reg;
+#else
+  return PM->RCAUSE.reg;
+#endif
 }
 
 void WatchdogSAMD::disable() {
