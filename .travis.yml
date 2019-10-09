@@ -1,0 +1,39 @@
+language: c
+sudo: false
+
+cache:
+  directories:
+    - ~/arduino_ide
+    - ~/.arduino15/packages/
+
+git:
+  depth: false
+  quiet: true
+
+addons:
+  apt:
+    packages:
+      - python3
+      - python3-pip
+      - python3-setuptools
+
+env:
+  global:
+    - ARDUINO_IDE_VERSION="1.8.9"
+    - PRETTYNAME="Adafruit SleepyDog Library"
+
+before_install:
+  - source <(curl -SLs https://raw.githubusercontent.com/adafruit/travis-ci-arduino/master/install.sh)
+
+install:
+  - pip3 install --user adafruit-nrfutil
+
+before_script:
+
+script:
+  - build_samd_platforms
+  - build_nrf5x_platforms
+
+# Generate and deploy documentation
+after_success:
+  - source <(curl -SLs  https://raw.githubusercontent.com/adafruit/travis-ci-arduino/master/library_check.sh)

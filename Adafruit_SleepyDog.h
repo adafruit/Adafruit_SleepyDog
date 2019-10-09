@@ -19,6 +19,9 @@
   // Teensy LC watchdog support.
   #include "utility/WatchdogKinetisL.h"
   typedef WatchdogKinetisLseries WatchdogType;
+#elif defined(NRF52_SERIES)
+  #include "utility/WatchdogNRF.h"
+  typedef WatchdogNRF WatchdogType;
 #else
   #error Unsupported platform for the Adafruit Watchdog library!
 #endif
