@@ -35,16 +35,13 @@ int WatchdogNRF::enable(int maxPeriodMS)
   return maxPeriodMS;
 }
 
-
 void WatchdogNRF::reset()
 {
   nrf_wdt_reload_request_set(NRF_WDT_RR0);
 }
 
-void WatchdogNRF::disable()
-{
-  // There is no way to stop/disable watchdog using source code
-}
+// There is no way to stop/disable watchdog using source code
+void WatchdogNRF::disable() { }
 
 int WatchdogNRF::sleep(int maxPeriodMS)
 {

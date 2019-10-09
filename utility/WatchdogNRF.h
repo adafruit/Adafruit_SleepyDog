@@ -19,7 +19,7 @@ class WatchdogNRF
     void reset();
 
     // Completely disable the watchdog timer.
-    void disable();
+    void disable() __attribute__((error("nRF's WDT cannot be disabled once enabled")));
 
     // Enter the lowest power sleep mode (using the watchdog timer) for the
     // desired period of time.  The passed in period (in milliseconds) is
