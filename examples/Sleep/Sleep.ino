@@ -46,7 +46,7 @@ void loop() {
   // Try to reattach USB connection on "native USB" boards (connection is
   // lost on sleep). Host will also need to reattach to the Serial monitor.
   // Seems not entirely reliable, hence the LED indicator fallback.
-#ifdef USBCON
+#if defined(USBCON) && !defined(USE_TINYUSB)
   USBDevice.attach();
 #endif
 

@@ -38,8 +38,10 @@ void setup() {
   }
   Serial.println();
 
+#ifndef NRF52_SERIES // cannot disable nRF's WDT
   // Disable the watchdog entirely by calling Watchdog.disable();
   Watchdog.disable();
+#endif  
 
   // Finally demonstrate the watchdog resetting by enabling it for a shorter
   // period of time and waiting a long time without a reset.  Notice you can
