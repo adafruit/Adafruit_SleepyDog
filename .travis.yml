@@ -31,7 +31,7 @@ install:
 before_script:
 
 script:
-  - build_main_platforms
+  - build_samd_platforms
   - build_nrf5x_platforms
 
 # Generate and deploy documentation
