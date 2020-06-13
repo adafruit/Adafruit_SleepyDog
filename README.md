@@ -1,4 +1,4 @@
-# Adafruit SleepyDog Arduino Library
+# Adafruit SleepyDog Arduino Library [![Build Status](https://github.com/adafruit/Adafruit_SleepyDog/workflows/Arduino%20Library%20CI/badge.svg)](https://github.com/adafruit/Adafruit_SleepyDog/actions)[![Documentation](https://github.com/adafruit/ci-arduino/blob/master/assets/doxygen_badge.svg)](http://adafruit.github.io/Adafruit_SleepyDog/html/index.html)
 
 Arduino library to use the watchdog timer for system reset and low power sleep.
 

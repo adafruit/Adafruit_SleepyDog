@@ -1,21 +1,19 @@
 #ifdef NRF52_SERIES
 
-#include "Arduino.h"
 #include "WatchdogNRF.h"
+#include "Arduino.h"
 #include "nrf_wdt.h"
 
-WatchdogNRF::WatchdogNRF()
-{
-  _wdto = -1;
-}
+WatchdogNRF::WatchdogNRF() { _wdto = -1; }
 
-int WatchdogNRF::enable(int maxPeriodMS)
-{
-  if (maxPeriodMS < 0) return 0;
+int WatchdogNRF::enable(int maxPeriodMS) {
+  if (maxPeriodMS < 0)
+    return 0;
 
   // cannot change wdt config register once it is started
   // return previous configured timeout
-  if ( nrf_wdt_started() ) return _wdto;
+  if (nrf_wdt_started())
+    return _wdto;
 
   // WDT run when CPU is sleep
   nrf_wdt_behaviour_set(NRF_WDT_BEHAVIOUR_RUN_SLEEP);
@@ -35,21 +33,19 @@ int WatchdogNRF::enable(int maxPeriodMS)
   return maxPeriodMS;
 }
 
-void WatchdogNRF::reset()
-{
-  nrf_wdt_reload_request_set(NRF_WDT_RR0);
-}
+void WatchdogNRF::reset() { nrf_wdt_reload_request_set(NRF_WDT_RR0); }
 
 // There is no way to stop/disable watchdog using source code
-void WatchdogNRF::disable() { }
+void WatchdogNRF::disable() {}
 
-int WatchdogNRF::sleep(int maxPeriodMS)
-{
-  if (maxPeriodMS < 0) return 0;
+int WatchdogNRF::sleep(int maxPeriodMS) {
+  if (maxPeriodMS < 0)
+    return 0;
 
 #ifdef ARDUINO_NRF52_ADAFRUIT
   // Mimic AVR to use 8 seconds.
-  if ( maxPeriodMS == 0 ) maxPeriodMS = 8000;
+  if (maxPeriodMS == 0)
+    maxPeriodMS = 8000;
 
   // Bluefruit freeRTOS tickless implementation will
   // automatically put CPU into low power mode with delay()
