@@ -11,6 +11,7 @@ public:
   // without any calls to reset().  The passed in period (in milliseconds)
   // is just a suggestion and a lower value might be picked if the hardware
   // does not support the exact desired value.
+  //
   // The actual period (in milliseconds) before a watchdog timer reset is
   // returned.
   int enable(int maxPeriodMS = 0);
