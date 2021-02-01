@@ -55,9 +55,9 @@ int WatchdogAVR::sleep(int maxPeriodMS) {
   // watchdog reset only triggers the interrupt (and wakes from deep sleep)
   // and not a full device reset.  This is a timing critical section of
   // code that must happen in 4 cycles.
-  WDTCSR |= (1 << WDCE) | (1 << WDE); // Set WDCE and WDE to enable changes.
-  WDTCSR = wdps;                      // Set the prescaler bit values.
-  WDTCSR |= (1 << WDIE);              // Enable only watchdog interrupts.
+  _WD_CONTROL_REG |= (1 << WDCE) | (1 << WDE); // Set WDCE and WDE to enable changes.
+  _WD_CONTROL_REG = wdps;                      // Set the prescaler bit values.
+  _WD_CONTROL_REG |= (1 << WDIE);              // Enable only watchdog interrupts.
   // Critical section finished, re-enable interrupts.
   sei();
 
