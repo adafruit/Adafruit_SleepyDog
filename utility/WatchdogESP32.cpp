@@ -3,8 +3,6 @@
 #include "WatchdogESP32.h"
 #include <esp_task_wdt.h>
 
-WatchdogESP32::WatchdogESP32() { _wdto = -1; }
-
 int WatchdogESP32::enable(int maxPeriodMS) {
   if (maxPeriodMS < 0)
     return 0;
@@ -17,7 +15,6 @@ int WatchdogESP32::enable(int maxPeriodMS) {
   esp_task_wdt_add(NULL);
 
   _wdto = maxPeriodMS;
-
   return maxPeriodMS;
 }
 

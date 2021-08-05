@@ -1,9 +1,10 @@
-#ifndef WATCHDOGESP32_H
-#define WATCHDOGESP32_H
+#ifndef WATCHDOGESP32_H_
+#define WATCHDOGESP32_H_
 
 class WatchdogESP32 {
 public:
-  WatchdogESP32();
+  WatchdogESP32() : _wdto(-1) {};
+
   // Enable the watchdog timer to reset the machine after a period of time
   // without any calls to reset().  The passed in period (in milliseconds) is
   // just a suggestion and a lower value might be picked if the hardware does
@@ -23,6 +24,6 @@ public:
 
 private:
   int _wdto;
-}
+};
 
 #endif // WATCHDOGESP32_H
