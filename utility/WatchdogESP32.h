@@ -14,6 +14,8 @@
  */
 #ifndef WATCHDOGESP32_H_
 #define WATCHDOGESP32_H_
+#include "esp_sleep.h"
+#include "esp_task_wdt.h"
 
 /**************************************************************************/
 /*!

@@ -1,8 +1,6 @@
 #if defined(ARDUINO_ARCH_ESP32)
 
 #include "WatchdogESP32.h"
-#include "esp_sleep.h"
-#include "esp_task_wdt.h"
 
 /**************************************************************************/
 /*!
@@ -21,7 +19,7 @@ int WatchdogESP32::enable(int maxPeriodMS) {
   // ESP32 expects TWDT in seconds
   uint32_t maxPeriod = maxPeriodMS / 1000;
   // Enable the TWDT and execute the esp32 panic handler when TWDT times out
-  esp_err_t = esp_task_wdt_init(maxPeriod, true);
+  esp_err_t err = esp_task_wdt_init(maxPeriod, true);
   if (err != ESP_OK)
     return 0; // Initialization failed due to lack of memory
 
