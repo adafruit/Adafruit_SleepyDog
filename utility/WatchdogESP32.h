@@ -1,26 +1,32 @@
+/*!
+ * @file WatchdogESP32.h
+ *
+ * Support for ESP32 TWDT and low-power sleep modes.
+ *
+ * Adafruit invests time and resources providing this open source code,
+ * please support Adafruit and open-source hardware by purchasing
+ * products from Adafruit!
+ *
+ * Written by Brent Rubell for Adafruit Industries.
+ *
+ * MIT License, all text here must be included in any redistribution.
+ *
+ */
 #ifndef WATCHDOGESP32_H_
 #define WATCHDOGESP32_H_
 
+/**************************************************************************/
+/*!
+    @brief  Class that contains functions for interacting with the ESP32's
+            WDT and low-power sleep functions.
+*/
+/**************************************************************************/
 class WatchdogESP32 {
 public:
-  WatchdogESP32() : _wdto(-1) {};
-
-  // Enable the watchdog timer to reset the machine after a period of time
-  // without any calls to reset().  The passed in period (in milliseconds) is
-  // just a suggestion and a lower value might be picked if the hardware does
-  // not support the exact desired value.
-  //
-  // The actual period (in milliseconds) before a watchdog timer reset is
-  // returned.
+  WatchdogESP32() : _wdto(-1){};
   int enable(int maxPeriodMS = 0);
-
-  // Reset or 'kick' the watchdog timer to prevent a reset of the device.
   void reset();
-
-  // Completely disable the watchdog timer.
   void disable();
-
-  // Enter ESP32 Deep-sleep mode
   int sleep(int maxPeriodMS = 0);
 
 private:
