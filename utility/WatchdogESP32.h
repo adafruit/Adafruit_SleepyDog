@@ -20,7 +20,8 @@ public:
   // Completely disable the watchdog timer.
   void disable();
 
-  void sleep() __attribute__((error("ESP32 Sleep not implemented!")));
+  // Enter ESP32 Deep-sleep mode
+  int sleep(int maxPeriodMS = 0);
 
 private:
   int _wdto;
