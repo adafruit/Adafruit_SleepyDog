@@ -2,22 +2,27 @@
 
 #include "WatchdogESP8266.h"
 
-/**************************************************************************/
+/**********************************************************************************************/
 /*!
     @brief  Initializes the ESP8266's software WDT
     @param    maxPeriodMS
               Timeout period of WDT in milliseconds
     @return The actual period (in milliseconds) before a watchdog timer
-            reset is returned. 0 otherwise.
+            reset is returned, 0 otherwise.
+    NOTE: Configuring the software WDT timeout maxPeriodMS value is NOT
+   IMPLEMENTED in the ESP8266 BSP [1]. Further, an investigation into the
+   default software WDT time yielded a fixed timeout period of 3.2 seconds [2].
+    [1] https://github.com/esp8266/Arduino/blob/master/cores/esp8266/Esp.h#L91
+    [2]https://sigmdel.ca/michel/program/esp8266/arduino/watchdogs_en.html#ESP8266_WDT_TIMEOUT
 */
-/**************************************************************************/
+/**********************************************************************************************/
 int WatchdogESP8266::enable(int maxPeriodMS) {
   ESP.wdtDisable();
   if (maxPeriodMS < 0)
     return 0;
 
   // Enable the WDT
-  ESP.wdtEnable((uint32_t)maxPeriodMS);
+  ESP.wdtEnable(0);
 
   _wdto = maxPeriodMS;
   return maxPeriodMS;

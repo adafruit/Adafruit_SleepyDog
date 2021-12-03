@@ -21,8 +21,8 @@
 
 /**************************************************************************/
 /*!
-    @brief  Class that contains functions for interacting with the ESP32's
-            WDT and low-power sleep functions.
+    @brief  Class that contains functions for interacting with the
+            ESP8266's WDT and low-power sleep functions.
 */
 /**************************************************************************/
 class WatchdogESP8266 {
