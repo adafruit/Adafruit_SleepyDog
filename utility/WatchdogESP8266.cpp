@@ -17,7 +17,7 @@ int WatchdogESP8266::enable(int maxPeriodMS) {
     return 0;
 
   // Enable the WDT
-  ESP.wdtEnable((uint32_t) maxPeriodMS);
+  ESP.wdtEnable((uint32_t)maxPeriodMS);
 
   _wdto = maxPeriodMS;
   return maxPeriodMS;
@@ -28,9 +28,7 @@ int WatchdogESP8266::enable(int maxPeriodMS) {
     @brief  Feeds the Watchdog Timer.
 */
 /**************************************************************************/
-void WatchdogESP8266::reset() {
-  ESP.wdtFeed();
-}
+void WatchdogESP8266::reset() { ESP.wdtFeed(); }
 
 /**************************************************************************/
 /*!
