@@ -31,6 +31,9 @@ typedef WatchdogNRF WatchdogType;
 #elif defined(ARDUINO_ARCH_ESP32)
 #include "utility/WatchdogESP32.h"
 typedef WatchdogESP32 WatchdogType;
+#elif defined(ARDUINO_ARCH_ESP8266)
+#include "utility/WatchdogESP8266.h"
+typedef WatchdogESP8266 WatchdogType;
 #else
 #error Unsupported platform for the Adafruit Watchdog library!
 #endif

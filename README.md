@@ -12,3 +12,4 @@ Currently supports the following hardware:
 *  Partial support for Teensy 3.X and LC (watchdog, no sleep).
 *  ATtiny 24/44/84 and 25/45/85
 *  ESP32, ESP32-S2
+*  ESP8266
