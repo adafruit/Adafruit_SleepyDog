@@ -17,7 +17,6 @@
 */
 /**********************************************************************************************/
 int WatchdogESP8266::enable(int maxPeriodMS) {
-  ESP.wdtDisable();
   if (maxPeriodMS < 0)
     return 0;
 
@@ -30,7 +29,9 @@ int WatchdogESP8266::enable(int maxPeriodMS) {
 
 /**************************************************************************/
 /*!
-    @brief  Feeds the Watchdog Timer.
+    @brief  Feeds the Watchdog timer.
+    NOTE: Calling yield() or delay() also feeds the hardware and software
+    watchdog timers.
 */
 /**************************************************************************/
 void WatchdogESP8266::reset() { ESP.wdtFeed(); }
@@ -38,9 +39,9 @@ void WatchdogESP8266::reset() { ESP.wdtFeed(); }
 /**************************************************************************/
 /*!
     @brief  Disables the Watchdog Timer.
-        NOTE: Please don't stop software watchdog too long
-        (less than 6 seconds), otherwise it will trigger the hardware
-        watchdog reset.
+        NOTE: Please don't stop the software WDT too long
+        (less than 6 seconds), otherwise it will trigger a hardware
+        watchdog reset!
 */
 /**************************************************************************/
 void WatchdogESP8266::disable() { ESP.wdtDisable(); }
