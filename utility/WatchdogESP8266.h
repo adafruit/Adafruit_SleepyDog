@@ -37,4 +37,4 @@ private:
   int _wdto;
 };
 
-#endif // WATCHDOGESP32_H
+#endif // WATCHDOGESP8266_H

@@ -48,10 +48,10 @@ void WatchdogESP8266::disable() { ESP.wdtDisable(); }
 
 /**************************************************************************/
 /*!
-    @brief  Configures the ESP32 to enter a low-power sleep mode for a
+    @brief  Configures the ESP8266 to enter a low-power sleep mode for a
             desired amount of time.
     @param    maxPeriodMS
-              Time to sleep the ESP32, in millis.
+              Time to sleep the ESP8266, in millis.
     @return The actual period (in milliseconds) that the hardware was
             asleep will be returned. Otherwise, 0 will be returned if the
             hardware could not enter the low-power mode.
