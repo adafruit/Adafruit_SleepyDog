@@ -209,19 +209,20 @@ int WatchdogSAMD::sleep(int maxPeriodMS) {
     ; // Wait for it to take
 #else
   SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
-  // Due to a hardware bug on the SAMD21, the SysTick interrupts become 
+  // Due to a hardware bug on the SAMD21, the SysTick interrupts become
   // active before the flash has powered up from sleep, causing a hard fault.
-  // To prevent this the SysTick interrupts are disabled before entering sleep mode.
-  SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;  // Disable SysTick interrupts
+  // To prevent this the SysTick interrupts are disabled before entering sleep
+  // mode.
+  SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk; // Disable SysTick interrupts
 #endif
 
   __DSB(); // Data sync to ensure outgoing memory accesses complete
   __WFI(); // Wait for interrupt (places device in sleep mode)
 
 #if (SAMD20_SERIES || SAMD21_SERIES)
-  SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;   // Enable SysTick interrupts
+  SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk; // Enable SysTick interrupts
 #endif
-  
+
   // Code resumes here on wake (WDT early warning interrupt).
   // Bug: the return value assumes the WDT has run its course;
   // incorrect if the device woke due to an external interrupt.
