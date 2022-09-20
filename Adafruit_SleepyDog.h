@@ -34,7 +34,7 @@ typedef WatchdogESP32 WatchdogType;
 #elif defined(ARDUINO_ARCH_ESP8266)
 #include "utility/WatchdogESP8266.h"
 typedef WatchdogESP8266 WatchdogType;
-#elif defined(ARDUINO_RASPBERRY_PI_PICO) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#elif defined(ARDUINO_ARCH_RP2040)
 #include "utility/WatchdogRP2040.h"
 typedef WatchdogRP2040 WatchdogType;
 #else

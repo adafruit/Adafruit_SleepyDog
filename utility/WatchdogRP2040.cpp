@@ -1,4 +1,4 @@
-#if defined(ARDUINO_RASPBERRY_PI_PICO) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#if defined(ARDUINO_ARCH_RP2040)
 
 #include "WatchdogRP2040.h"
 
@@ -16,7 +16,7 @@ int WatchdogRP2040::enable(int maxPeriodMS) {
     return 0;
 
   // Enables the RP2040's hardware WDT with maxPeriodMS delay
-  // (wdt should be updated every maxPeriodMS ms) and 
+  // (wdt should be updated every maxPeriodMS ms) and
   // enables pausing the WDT on debugging when stepping thru
   watchdog_enable(maxPeriodMS, 1);
 
