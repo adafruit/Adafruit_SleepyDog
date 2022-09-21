@@ -53,11 +53,9 @@ void WatchdogRP2040::disable() {}
 int WatchdogRP2040::sleep(int maxPeriodMS) {
   if (maxPeriodMS < 0)
     return 0;
-  // Convert from MS to microseconds
-  uint64_t sleepTime = maxPeriodMS * 1000;
 
-  // perform a lower power (WFE) sleep
-  sleep_us(sleepTime);
+  // perform a lower power (WFE) sleep (pico-core calls sleep_ms(sleepTime))
+  delay(maxPeriodMS);
 
   return maxPeriodMS;
 }
