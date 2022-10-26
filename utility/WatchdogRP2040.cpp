@@ -55,7 +55,7 @@ int WatchdogRP2040::sleep(int maxPeriodMS) {
     return 0;
 
   // perform a lower power (WFE) sleep (pico-core calls sleep_ms(sleepTime))
-  delay(maxPeriodMS);
+  sleep_ms(maxPeriodMS);
 
   return maxPeriodMS;
 }
