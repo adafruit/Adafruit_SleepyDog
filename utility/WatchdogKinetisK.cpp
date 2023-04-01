@@ -72,8 +72,11 @@ static void watchdog_config(int cfg, int val) {
   }
 }
 
-static void one_bus_cycle(void) {
+static void one_bus_cycle(void)
+{
   __asm__ volatile("nop");
+
+#if F_BUS > 0
 #if (F_CPU / F_BUS) > 1
   __asm__ volatile("nop");
 #endif
@@ -94,6 +97,7 @@ static void one_bus_cycle(void) {
 #endif
 #if (F_CPU / F_BUS) > 7
   __asm__ volatile("nop");
+#endif
 #endif
 }
 
