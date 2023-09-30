@@ -18,7 +18,7 @@ void setup() {
   // First a normal example of using the watchdog timer.
   // Enable the watchdog by calling Watchdog.enable() as below.
   // This will turn on the watchdog timer with a ~4 second timeout
-  // before reseting the Arduino. The estimated actual milliseconds
+  // before resetting the Arduino. The estimated actual milliseconds
   // before reset (in milliseconds) is returned.
   // Make sure to reset the watchdog before the countdown expires or
   // the Arduino will reset!
