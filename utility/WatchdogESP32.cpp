@@ -18,10 +18,24 @@ int WatchdogESP32::enable(int maxPeriodMS) {
 
   // ESP32 expects TWDT in seconds
   uint32_t maxPeriod = maxPeriodMS / 1000;
+
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 1)
+  // Initialize the wdt configuration for ESP-IDF v5.x and above
+  esp_task_wdt_config_t wdt_config = {
+      .timeout_ms = maxPeriod,
+      .idle_core_mask = (1 << portNUM_PROCESSORS) - 1, // Bitmask of all cores
+      .trigger_panic = true,
+  };
+  // Enable the TWDT and execute the esp32 panic handler when TWDT times out
+  esp_err_t err = esp_task_wdt_init(&wdt_config);
+#else
+  // For ESP-IDF v4.x and below
   // Enable the TWDT and execute the esp32 panic handler when TWDT times out
   esp_err_t err = esp_task_wdt_init(maxPeriod, true);
+#endif
+
   if (err != ESP_OK)
-    return 0; // Initialization failed due to lack of memory
+    return 0; // Failed to initialize TWDT
 
   // NULL to subscribe the current running task to the TWDT
   err = esp_task_wdt_add(NULL);
