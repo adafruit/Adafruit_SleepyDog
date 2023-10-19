@@ -23,7 +23,7 @@ int WatchdogESP32::enable(int maxPeriodMS) {
       .idle_core_mask = 0, // Subscribe to the idle task on the APP CPU
       .trigger_panic = true,
   };
-  // TWDT already initialized, let's just reconfigure it
+  // TWDT already initialized by the RTOS, reconfigure it
   esp_err_t err = esp_task_wdt_reconfigure(&wdt_config);
 #else
   // IDF V4.x and below expect TWDT in seconds
