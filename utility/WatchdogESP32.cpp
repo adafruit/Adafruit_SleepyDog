@@ -19,7 +19,7 @@ int WatchdogESP32::enable(int maxPeriodMS) {
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 1)
   // Initialize the wdt configuration for ESP-IDF v5.x and above
   esp_task_wdt_config_t wdt_config = {
-      .timeout_ms = maxPeriodMS,
+      .timeout_ms = (uint32_t)maxPeriodMS,
       .idle_core_mask = 0, // Subscribe to the idle task on the APP CPU
       .trigger_panic = true,
   };
