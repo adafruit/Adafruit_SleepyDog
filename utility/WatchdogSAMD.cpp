@@ -8,6 +8,10 @@
 #include "WatchdogSAMD.h"
 #include <sam.h>
 
+int WatchdogSAMD::enable(int maxPeriodMS) {
+  return this->enable(maxPeriodMS, false);
+}
+
 int WatchdogSAMD::enable(int maxPeriodMS, bool isForSleep) {
   // Enable the watchdog with a period up to the specified max period in
   // milliseconds.
