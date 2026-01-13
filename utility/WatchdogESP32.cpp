@@ -22,7 +22,7 @@ int WatchdogESP32::enable(int maxPeriodMS) {
       .timeout_ms = (uint32_t)maxPeriodMS,
       .idle_core_mask =
           (1 << CONFIG_FREERTOS_NUMBER_OF_CORES) - 1, // Bitmask of all cores
-      .trigger_panic = false,
+      .trigger_panic = true,
   };
   esp_err_t err = esp_task_wdt_reconfigure(&wdt_config);
 #else
