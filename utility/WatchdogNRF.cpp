@@ -17,7 +17,8 @@ int WatchdogNRF::enable(int maxPeriodMS) {
 
   // WDT run when CPU is sleep
   nrf_wdt_behaviour_set(NRF_WDT, NRF_WDT_BEHAVIOUR_RUN_SLEEP);
-  nrf_wdt_reload_value_set(NRF_WDT, (maxPeriodMS * 32768) / 1000);
+  uint32_t wdt_val = ((uint64_t)maxPeriodMS * 32768) / 1000;
+  nrf_wdt_reload_value_set(NRF_WDT, wdt_val);
 
   // use channel 0
   nrf_wdt_reload_request_enable(NRF_WDT, NRF_WDT_RR0);
