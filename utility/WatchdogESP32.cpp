@@ -17,11 +17,11 @@ int WatchdogESP32::enable(int maxPeriodMS) {
     return 0;
 
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 1)
-  // Initialize the wdt configuration for ESP-IDF v5.x and above
+// Initialize the wdt configuration for ESP-IDF v5.x and above
+#include "soc/soc_caps.h"
   esp_task_wdt_config_t wdt_config = {
       .timeout_ms = (uint32_t)maxPeriodMS,
-      .idle_core_mask =
-          (1 << CONFIG_FREERTOS_NUMBER_OF_CORES) - 1, // Bitmask of all cores
+      .idle_core_mask = (1 << SOC_CPU_CORES_NUM) - 1, // Bitmask of all cores
       .trigger_panic = true,
   };
   esp_err_t err = esp_task_wdt_reconfigure(&wdt_config);
