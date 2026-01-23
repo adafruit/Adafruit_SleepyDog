@@ -24,7 +24,10 @@ int WatchdogESP32::enable(int maxPeriodMS) {
       .idle_core_mask = (1 << SOC_CPU_CORES_NUM) - 1, // Bitmask of all cores
       .trigger_panic = true,
   };
-  esp_err_t err = esp_task_wdt_reconfigure(&wdt_config);
+  esp_err_t err = esp_task_wdt_init(&wdt_config);
+  // Reconfigure in case TWDT was already initialized
+  if (err == ESP_ERR_INVALID_STATE)
+    err = esp_task_wdt_reconfigure(&wdt_config);
 #else
   // IDF V4.x and below expect TWDT in seconds
   uint32_t maxPeriod = maxPeriodMS / 1000;
