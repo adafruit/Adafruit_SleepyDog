@@ -1,0 +1,14 @@
+{
+  "name": "Adafruit SleepyDog Library",
+  "version": "1.8.0",
+  "frameworks": ["arduino"],
+  "platforms": ["atmelavr", "atmelsam", "nordicnrf52", "teensy", "espressif32", "espressif8266", "raspberrypi"],
+  "dependencies": {
+    "framework": ["arduino"],
+    "platform": ["raspberrypi"]
+  },
+  "build": {
+    "flags": ["-I$PROJECT_PACKAGES_DIR/framework-arduinopico/pico-sdk/src/rp2_common/hardware_powman/include"],
+    "srcFilter": "+<*> +<utility/WatchdogRP2350/*.cpp> +<utility/WatchdogRP2350/hardware_rosc/*.c> +<utility/WatchdogRP2350/pico_sleep/*.c>"
+  }
+}
