@@ -21,7 +21,7 @@ int WatchdogESP32::enable(int maxPeriodMS) {
 #include "soc/soc_caps.h"
   esp_task_wdt_config_t wdt_config = {
       .timeout_ms = (uint32_t)maxPeriodMS,
-      .idle_core_mask = (1 << SOC_CPU_CORES_NUM) - 1, // Bitmask of all cores
+      .idle_core_mask = 0, // Subscribe to the idle task on the APP CPU
       .trigger_panic = true,
   };
   esp_err_t err = esp_task_wdt_init(&wdt_config);
