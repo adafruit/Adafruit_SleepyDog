@@ -3,7 +3,8 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#if defined(ARDUINO_ARCH_RP2350) || defined(PICO_RP2350) || defined(TARGET_RP2350)
+#if defined(ARDUINO_ARCH_RP2350) || defined(PICO_RP2350) ||                    \
+    defined(TARGET_RP2350)
 
 #include <inttypes.h>
 #include <stdio.h>

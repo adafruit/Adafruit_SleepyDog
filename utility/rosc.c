@@ -3,12 +3,13 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#if defined(ARDUINO_ARCH_RP2350) || defined(PICO_RP2350) || defined(TARGET_RP2350)
+#if defined(ARDUINO_ARCH_RP2350) || defined(PICO_RP2350) ||                    \
+    defined(TARGET_RP2350)
 #include "pico.h"
 
 // For MHZ definitions etc
-#include "hardware/clocks.h"
 #include "WatchdogRP2350/hardware_rosc/include/hardware/rosc.h"
+#include "hardware/clocks.h"
 
 // Given a ROSC delay stage code, return the next-numerically-higher code.
 // Top result bit is set when called on maximum ROSC code.
