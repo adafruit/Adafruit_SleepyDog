@@ -1,7 +1,7 @@
 #if defined(ARDUINO_ARCH_RP2350) || defined(PICO_RP2350) ||                    \
     defined(TARGET_RP2350)
 
-#include "WatchdogRP2350.h"
+#include "WatchdogRP2350/WatchdogRP2350.h"
 
 /**********************************************************************************************/
 /*!

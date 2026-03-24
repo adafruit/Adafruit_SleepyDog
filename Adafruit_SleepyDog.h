@@ -34,12 +34,17 @@ typedef WatchdogESP32 WatchdogType;
 #elif defined(ARDUINO_ARCH_ESP8266)
 #include "utility/WatchdogESP8266.h"
 typedef WatchdogESP8266 WatchdogType;
-#elif defined(ARDUINO_ARCH_RP2350)
+// Philhower BSP defines ARDUINO_ARCH_RP2040 for BOTH RP2040 and RP2350.
+// RP2350 boards are distinguished by PICO_RP2350=1 / TARGET_RP2350.
+#elif defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_RP2350)
+#if defined(PICO_RP2350) || defined(TARGET_RP2350) ||                          \
+    defined(ARDUINO_ARCH_RP2350)
 #include "utility/WatchdogRP2350/WatchdogRP2350.h"
 typedef WatchdogRP2350 WatchdogType;
-#elif defined(ARDUINO_ARCH_RP2040)
+#else
 #include "utility/WatchdogRP2040.h"
 typedef WatchdogRP2040 WatchdogType;
+#endif
 #else
 #error Unsupported platform for the Adafruit Watchdog library!
 #endif
