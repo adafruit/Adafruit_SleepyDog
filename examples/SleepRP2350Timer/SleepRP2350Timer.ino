@@ -7,6 +7,8 @@
 //
 // Brent Rubell for Adafruit Industries
 //
+// NOTE: After uploading, physically unplug and replug the USB cable to
+// reset the AON timer correctly before running.
 
 #include <Adafruit_SleepyDog.h>
 
