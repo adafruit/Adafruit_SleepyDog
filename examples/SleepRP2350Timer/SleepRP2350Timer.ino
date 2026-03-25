@@ -69,6 +69,7 @@ void loop() {
     // (e.g. screen, minicom), comment out USB.disconnect() and USB.connect()
     // to prevent the port from disconnecting on each wake cycle.
     USB.disconnect();
+      delay(500); // Give host time to register disconnect before reconnecting
     USB.connect();
   #endif
 
