@@ -33,12 +33,14 @@ jobs:
         echo "Config dump / file location:"
         arduino-cli config dump --verbose
 
+    - name: Move arduino-cli to /usr/local/bin
+      run: sudo mv $(which arduino-cli) /usr/local/bin/arduino-cli
+
     - name: test WS platforms
       run: |
         echo "running from $(pwd)"
         echo "arduino-cli available at: $(which arduino-cli)"
         python3 ci/build_platform.py feather_rp2040
-
 
     - name: test platforms
       run: |
@@ -50,7 +52,6 @@ jobs:
       run: |
         echo "running from $(pwd)"
         echo "arduino-cli available at: $(which arduino-cli)"
-        echo "running from $(pwd)"
         python3 ci/build_platform.py rp2040_platforms
         python3 ci/build_platform.py pico_rp2040
         python3 ci/build_platform.py pico_rp2040_tinyusb
