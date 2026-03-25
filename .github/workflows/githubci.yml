@@ -15,15 +15,19 @@ jobs:
       with:
          repository: adafruit/ci-arduino
          path: ci
+         ref: ci-wippersnapper
 
     - name: pre-install
       run: bash ci/actions_install.sh
+
+    - name: test WS platforms
+      run: python3 ci/build_platform.py wippersnapper_platforms
 
     - name: test platforms
       run: python3 ci/build_platform.py main_platforms
 
     - name: test Raspberry Pi platforms
-      run: | 
+      run: |
         python3 ci/build_platform.py rp2040_platforms
         python3 ci/build_platform.py pico_rp2040
         python3 ci/build_platform.py pico_rp2040_tinyusb
