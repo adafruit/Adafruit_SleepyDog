@@ -11,7 +11,11 @@
 // reset the AON timer correctly before running.
 
 #include <Adafruit_SleepyDog.h>
+#ifdef USE_TINYUSB
+#include <Adafruit_TinyUSB.h>
+#else
 #include "USB.h"
+#endif
 
 static bool awake;
 
@@ -58,7 +62,8 @@ void loop() {
   // Re-enable clocks, generators, USB and resume execution
   // NOTE: This MUST be called to properly resume from sleep!
   Watchdog.resumeFromSleep();
-        // Re-enable USB and Serial after sleep. Required for Windows where USB
+        #ifndef USE_TINYUSB
+  // Re-enable USB and Serial after sleep. Required for Windows where USB
     // does not re-enumerate automatically. On macOS and Linux, USB is
     // maintained across sleep cycles. If you use an external serial terminal
     // (e.g. screen, minicom), comment out USB.disconnect() and USB.connect()
@@ -67,6 +72,7 @@ void loop() {
     USB.connect();
     Serial.begin(115200);
     while (!Serial);
+  #endif
 
   Serial.println("I'm awake now!");
   Serial.print("Slept for approximately ");
