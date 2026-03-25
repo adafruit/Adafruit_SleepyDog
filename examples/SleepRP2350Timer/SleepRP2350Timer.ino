@@ -58,7 +58,11 @@ void loop() {
   // Re-enable clocks, generators, USB and resume execution
   // NOTE: This MUST be called to properly resume from sleep!
   Watchdog.resumeFromSleep();
-      // Re-enable USB and Serial (required for Windows USB re-enumeration after sleep)
+        // Re-enable USB and Serial after sleep. Required for Windows where USB
+    // does not re-enumerate automatically. On macOS and Linux, USB is
+    // maintained across sleep cycles. If you use an external serial terminal
+    // (e.g. screen, minicom), comment out USB.disconnect() and USB.connect()
+    // to prevent the port from disconnecting on each wake cycle.
     USB.disconnect();
     USB.connect();
     Serial.begin(115200);
