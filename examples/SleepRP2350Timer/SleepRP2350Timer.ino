@@ -11,6 +11,7 @@
 // reset the AON timer correctly before running.
 
 #include <Adafruit_SleepyDog.h>
+#include "USB.h"
 
 static bool awake;
 
@@ -57,6 +58,11 @@ void loop() {
   // Re-enable clocks, generators, USB and resume execution
   // NOTE: This MUST be called to properly resume from sleep!
   Watchdog.resumeFromSleep();
+    // Re-enable USB and Serial for Windows/Linux compatibility
+    USB.disconnect();
+    USB.connect();
+    Serial.begin(115200);
+    while (!Serial);
 
   Serial.println("I'm awake now!");
   Serial.print("Slept for approximately ");
