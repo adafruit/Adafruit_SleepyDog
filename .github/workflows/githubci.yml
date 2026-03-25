@@ -20,8 +20,19 @@ jobs:
     - name: pre-install
       run: bash ci/actions_install.sh
 
+    - name: check arduino-cli location + version
+      run: |
+        echo "Arduino CLI location:"
+        which arduino-cli
+        echo "Arduino CLI version (and path check):"
+        arduino-cli version
+        echo "Is on PATH?"
+        echo $PATH
+        echo "Config dump / file location:"
+        arduino-cli config dump --verbose
+
     - name: test WS platforms
-      run: python3 ci/build_platform.py wippersnapper_platforms
+      run: python3 ci/build_platform.py feather_rp2040
 
     - name: test platforms
       run: python3 ci/build_platform.py main_platforms
