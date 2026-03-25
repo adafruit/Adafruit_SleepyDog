@@ -58,7 +58,7 @@ void loop() {
   // Re-enable clocks, generators, USB and resume execution
   // NOTE: This MUST be called to properly resume from sleep!
   Watchdog.resumeFromSleep();
-    // Re-enable USB and Serial for Windows/Linux compatibility
+      // Re-enable USB and Serial (required for Windows USB re-enumeration after sleep)
     USB.disconnect();
     USB.connect();
     Serial.begin(115200);
