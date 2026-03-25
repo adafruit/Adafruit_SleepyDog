@@ -43,14 +43,22 @@ jobs:
         python3 ci/build_platform.py rp2040_platforms
         # python3 ci/build_platform.py feather_rp2040
         # python3 ci/build_platform.py pico_rp2040
+        cd "$GITHUB_WORKSPACE"   # <-- add this
         python3 ci/build_platform.py pico_rp2040_tinyusb
+        cd "$GITHUB_WORKSPACE"   # <-- add this
         python3 ci/build_platform.py pico_rp2040_tinyusb_host
+        cd "$GITHUB_WORKSPACE"   # <-- add this
         # python3 ci/build_platform.py feather_rp2350
         python3 ci/build_platform.py pico_rp2350
+        cd "$GITHUB_WORKSPACE"   # <-- add this
         python3 ci/build_platform.py pico_rp2350_tinyusb
+        cd "$GITHUB_WORKSPACE"   # <-- add this
         python3 ci/build_platform.py pico_rp2350_tinyusb_host
+        cd "$GITHUB_WORKSPACE"   # <-- add this
         python3 ci/build_platform.py picow_rp2040
+        cd "$GITHUB_WORKSPACE"   # <-- add this
         python3 ci/build_platform.py picow_rp2040_tinyusb
+        cd "$GITHUB_WORKSPACE"   # <-- add this
         python3 ci/build_platform.py main_platforms
 
     - name: clang
