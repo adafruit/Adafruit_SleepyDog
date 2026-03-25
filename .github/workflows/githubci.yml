@@ -41,24 +41,20 @@ jobs:
         echo "running from $(pwd)"
         echo "arduino-cli available at: $(which arduino-cli)"
         python3 ci/build_platform.py rp2040_platforms
+        # avoid uninstall
+        rm -f ~/Arduino/libraries/Adafruit_SleepyDog
+        cd "$GITHUB_WORKSPACE"
+        echo "running from $(pwd)"
         # python3 ci/build_platform.py feather_rp2040
         # python3 ci/build_platform.py pico_rp2040
-        cd "$GITHUB_WORKSPACE"   # <-- add this
         python3 ci/build_platform.py pico_rp2040_tinyusb
-        cd "$GITHUB_WORKSPACE"   # <-- add this
         python3 ci/build_platform.py pico_rp2040_tinyusb_host
-        cd "$GITHUB_WORKSPACE"   # <-- add this
         # python3 ci/build_platform.py feather_rp2350
         python3 ci/build_platform.py pico_rp2350
-        cd "$GITHUB_WORKSPACE"   # <-- add this
         python3 ci/build_platform.py pico_rp2350_tinyusb
-        cd "$GITHUB_WORKSPACE"   # <-- add this
         python3 ci/build_platform.py pico_rp2350_tinyusb_host
-        cd "$GITHUB_WORKSPACE"   # <-- add this
         python3 ci/build_platform.py picow_rp2040
-        cd "$GITHUB_WORKSPACE"   # <-- add this
         python3 ci/build_platform.py picow_rp2040_tinyusb
-        cd "$GITHUB_WORKSPACE"   # <-- add this
         python3 ci/build_platform.py main_platforms
 
     - name: clang
