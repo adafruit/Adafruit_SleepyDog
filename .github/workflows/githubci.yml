@@ -22,6 +22,20 @@ jobs:
     - name: test platforms
       run: python3 ci/build_platform.py main_platforms
 
+    - name: test Raspberry Pi platforms
+      run: | 
+        python3 ci/build_platform.py rp2040_platforms
+        python3 ci/build_platform.py pico_rp2040
+        python3 ci/build_platform.py pico_rp2040_tinyusb
+        python3 ci/build_platform.py pico_rp2040_tinyusb_host
+        python3 ci/build_platform.py pico_rp2350
+        python3 ci/build_platform.py pico_rp2350_tinyusb
+        python3 ci/build_platform.py pico_rp2350_tinyusb_host
+        python3 ci/build_platform.py picow_rp2040
+        python3 ci/build_platform.py picow_rp2040_tinyusb
+        # Ideally check wippersnapper_platforms, but from
+        # ci-arduino/all_platforms.py at ci-wippersnapper
+
     - name: clang
       run: python3 ci/run-clang-format.py -e "ci/*" -e "bin/*" -r . 
 
