@@ -22,6 +22,8 @@ jobs:
 
     - name: check arduino-cli location + version
       run: |
+        echo "CWD:"
+        pwd
         echo "Arduino CLI location:"
         which arduino-cli
         echo "Arduino CLI version (and path check):"
@@ -32,13 +34,23 @@ jobs:
         arduino-cli config dump --verbose
 
     - name: test WS platforms
-      run: python3 ci/build_platform.py feather_rp2040
+      run: |
+        echo "running from $(pwd)"
+        echo "arduino-cli available at: $(which arduino-cli)"
+        python3 ci/build_platform.py feather_rp2040
+
 
     - name: test platforms
-      run: python3 ci/build_platform.py main_platforms
+      run: |
+        echo "running from $(pwd)"
+        echo "arduino-cli available at: $(which arduino-cli)"
+        python3 ci/build_platform.py main_platforms
 
     - name: test Raspberry Pi platforms
       run: |
+        echo "running from $(pwd)"
+        echo "arduino-cli available at: $(which arduino-cli)"
+        echo "running from $(pwd)"
         python3 ci/build_platform.py rp2040_platforms
         python3 ci/build_platform.py pico_rp2040
         python3 ci/build_platform.py pico_rp2040_tinyusb
