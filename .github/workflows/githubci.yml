@@ -15,12 +15,39 @@ jobs:
       with:
          repository: adafruit/ci-arduino
          path: ci
+         ref: ci-wippersnapper
 
     - name: pre-install
       run: bash ci/actions_install.sh
 
+    - name: Install extra Arduino libraries
+      run: |
+        git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
+
+    - name: check arduino-cli location + version
+      run: |
+        echo "CWD:"
+        pwd
+        echo "Arduino CLI location:"
+        which arduino-cli
+        echo "Arduino CLI version (and path check):"
+        arduino-cli version
+        echo "Is on PATH?"
+        echo $PATH
+        echo "Config dump / file location:"
+        arduino-cli config dump --verbose
+
+    - name: Move arduino-cli to /usr/local/bin
+      run: sudo mv $(which arduino-cli) /usr/local/bin/arduino-cli
+
     - name: test platforms
-      run: python3 ci/build_platform.py main_platforms
+      run: |
+        echo "running from $(pwd)"
+        echo "arduino-cli available at: $(which arduino-cli)"
+        python3 ci/build_platform.py rp2040_platforms
+        for platform in pico_rp2040_tinyusb pico_rp2040_tinyusb_host pico_rp2350 pico_rp2350_tinyusb pico_rp2350_tinyusb_host picow_rp2040 picow_rp2040_tinyusb main_platforms; do
+          python3 ci/build_platform.py $platform --skip-uninstall
+        done
 
     - name: clang
       run: python3 ci/run-clang-format.py -e "ci/*" -e "bin/*" -r . 
