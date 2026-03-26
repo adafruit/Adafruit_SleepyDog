@@ -4,6 +4,10 @@
 //
 // Author: Tony DiCola
 
+#ifdef USE_TINYUSB
+#include <Adafruit_TinyUSB.h>  // Include TinyUSB Serial port
+#endif
+
 #include <Adafruit_SleepyDog.h>
 
 void setup() {
