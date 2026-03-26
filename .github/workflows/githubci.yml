@@ -13,9 +13,9 @@ jobs:
     - uses: actions/checkout@v3
     - uses: actions/checkout@v3
       with:
-         repository: adafruit/ci-arduino
+         repository: tyeth-ai-assisted/ci-arduino
          path: ci
-         ref: ci-wippersnapper
+         ref: feature/skip-uninstall
 
     - name: pre-install
       run: bash ci/actions_install.sh
@@ -42,8 +42,7 @@ jobs:
         echo "arduino-cli available at: $(which arduino-cli)"
         python3 ci/build_platform.py rp2040_platforms
         for platform in pico_rp2040_tinyusb pico_rp2040_tinyusb_host pico_rp2350 pico_rp2350_tinyusb pico_rp2350_tinyusb_host picow_rp2040 picow_rp2040_tinyusb main_platforms; do
-          rm -f ~/Arduino/libraries/Adafruit_SleepyDog
-          python3 ci/build_platform.py $platform
+          python3 ci/build_platform.py $platform --skip-uninstall
         done
 
     - name: clang
