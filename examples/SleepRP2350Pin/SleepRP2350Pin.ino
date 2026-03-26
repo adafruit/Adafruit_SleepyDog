@@ -5,8 +5,15 @@
 //
 // Brent Rubell for Adafruit Industries
 //
+// NOTE: After uploading, physically unplug and replug the USB cable to
+// reset the AON timer correctly before running.
 
 #include <Adafruit_SleepyDog.h>
+#ifdef USE_TINYUSB
+#include <Adafruit_TinyUSB.h>
+#else
+#include "USB.h"
+#endif
 #define WAKE_PIN 2 // GPIO pin to wake on, change as needed for your use case
 
 void setup() {
@@ -42,6 +49,16 @@ void loop() {
   // Re-enable clocks, generators, USB and resume execution
   // NOTE: This MUST be called to properly resume from sleep!
   Watchdog.resumeFromSleep();
+  #ifndef USE_TINYUSB
+  // Re-enable USB after sleep. Required for Windows where USB
+  // does not re-enumerate automatically. On macOS and Linux, USB is
+  // maintained across sleep cycles. If you use an external serial terminal
+  // (e.g. screen, minicom), comment out USB.disconnect() and USB.connect()
+  // to prevent the port from disconnecting on each wake cycle.
+  USB.disconnect();
+  delay(500); // Give host time to register disconnect before reconnecting
+  USB.connect();
+  #endif
 
   // NOTE: We can not track sleep duration when waking from a pin because we use
   // the crystal oscillator as the dormant clock source, so the AON timer we'd
