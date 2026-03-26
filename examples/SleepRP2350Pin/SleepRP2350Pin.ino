@@ -17,7 +17,7 @@
 #define WAKE_PIN 2 // GPIO pin to wake on, change as needed for your use case
 
 void setup() {
-    pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
 
   Serial.begin(115200);
@@ -27,7 +27,7 @@ void setup() {
 }
 
 void loop() {
-    Serial.println("Going to sleep in 5 seconds...");
+  Serial.println("Going to sleep in 5 seconds...");
   Serial.println("To wake up, connect GPIO pin 2 to 3.3V (for HIGH wake).");
   delay(5000);
 
