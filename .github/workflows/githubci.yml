@@ -24,22 +24,6 @@ jobs:
       run: |
         git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
 
-    - name: check arduino-cli location + version
-      run: |
-        echo "CWD:"
-        pwd
-        echo "Arduino CLI location:"
-        which arduino-cli
-        echo "Arduino CLI version (and path check):"
-        arduino-cli version
-        echo "Is on PATH?"
-        echo $PATH
-        echo "Config dump / file location:"
-        arduino-cli config dump --verbose
-
-    - name: Move arduino-cli to /usr/local/bin
-      run: sudo mv $(which arduino-cli) /usr/local/bin/arduino-cli
-
     - name: test platforms
       run: |
         echo "running from $(pwd)"
