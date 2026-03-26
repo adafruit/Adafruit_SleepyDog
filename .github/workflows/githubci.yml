@@ -20,6 +20,10 @@ jobs:
     - name: pre-install
       run: bash ci/actions_install.sh
 
+    - name: Install extra Arduino libraries
+      run: |
+        git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
+
     - name: check arduino-cli location + version
       run: |
         echo "CWD:"
