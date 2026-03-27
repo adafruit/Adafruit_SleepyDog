@@ -22,13 +22,13 @@ static bool awake;
 // This function will be called when the device wakes from sleep
 // You can add any custom behavior you want here
 void cbWake() {
-  // Show we're awake again
+    // Show we're awake again
   digitalWrite(LED_BUILTIN, HIGH);
   awake = true;
 }
 
 void setup() {
-  pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
 
   Serial.begin(115200);
@@ -42,12 +42,21 @@ void setup() {
 }
 
 void loop() {
-  Serial.println("Going to sleep in 5 seconds...");
+    Serial.println("Going to sleep in 5 seconds...");
   delay(5000);
 
   // Enter Sleep mode for 5 seconds
   awake = false;
   digitalWrite(LED_BUILTIN, LOW);
+
+  // Disconnect USB before sleeping so the host sees a clean unplug event
+  // rather than a hung/errored device while the chip is powered down.
+  // On wake, USB.connect() re-enumerates cleanly with no delay needed.
+  // (TinyUSB stack manages this internally; only needed for Pico SDK stack.)
+  #ifndef USE_TINYUSB
+  USB.disconnect();
+  #endif
+
   // Enter sleep state (6.5.2 in RP2350 Datasheet)
   Watchdog.goToSleepUntil(5000);
   // Uncomment the line below (and comment the line above) to enter Dormant
@@ -71,6 +80,15 @@ void loop() {
     USB.disconnect();
       delay(500); // Give host time to register disconnect before reconnecting
     USB.connect();
+  #endif
+
+  // Reconnect USB after wakeup. The host sees this as a normal plug-in
+  // event and re-enumerates the device. No delay() needed because
+  // USB.disconnect() was called before sleep, so the host already
+  // registered the disconnect and is waiting for the device to return.
+  #ifndef USE_TINYUSB
+  USB.connect();
+        while (!Serial);
   #endif
 
   Serial.println("I'm awake now!");
