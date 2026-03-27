@@ -88,6 +88,7 @@ void loop() {
   // registered the disconnect and is waiting for the device to return.
   #ifndef USE_TINYUSB
   USB.connect();
+        while (!Serial);
   #endif
 
   Serial.println("I'm awake now!");
