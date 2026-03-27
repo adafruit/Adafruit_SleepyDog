@@ -17,7 +17,7 @@
 #define WAKE_PIN 2 // GPIO pin to wake on, change as needed for your use case
 
 void setup() {
-  pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
 
   Serial.begin(115200);
@@ -27,12 +27,20 @@ void setup() {
 }
 
 void loop() {
-  Serial.println("Going to sleep in 5 seconds...");
+    Serial.println("Going to sleep in 5 seconds...");
   Serial.println("To wake up, connect GPIO pin 2 to 3.3V (for HIGH wake).");
   delay(5000);
 
   // Enter Sleep mode for 5 seconds
   digitalWrite(LED_BUILTIN, LOW);
+
+  // Disconnect USB before sleeping so the host sees a clean unplug event
+  // rather than a hung/errored device while the chip is powered down.
+  // On wake, USB.connect() re-enumerates cleanly with no delay needed.
+  // (TinyUSB stack manages this internally; only needed for Pico SDK stack.)
+  #ifndef USE_TINYUSB
+  USB.disconnect();
+  #endif
 
   // Sleep until GPIO WAKE_PIN goes HIGH on a rising edge
   Watchdog.goToSleepUntilPin(WAKE_PIN, true, true);
@@ -57,6 +65,14 @@ void loop() {
   // to prevent the port from disconnecting on each wake cycle.
   USB.disconnect();
   delay(500); // Give host time to register disconnect before reconnecting
+  USB.connect();
+  #endif
+
+  // Reconnect USB after wakeup. The host sees this as a normal plug-in
+  // event and re-enumerates the device. No delay() needed because
+  // USB.disconnect() was called before sleep, so the host already
+  // registered the disconnect and is waiting for the device to return.
+  #ifndef USE_TINYUSB
   USB.connect();
   #endif
 
