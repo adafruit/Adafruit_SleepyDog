@@ -74,6 +74,7 @@ void loop() {
   // registered the disconnect and is waiting for the device to return.
   #ifndef USE_TINYUSB
   USB.connect();
+        while (!Serial);
   #endif
 
   // NOTE: We can not track sleep duration when waking from a pin because we use
