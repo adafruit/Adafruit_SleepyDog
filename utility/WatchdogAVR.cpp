@@ -75,9 +75,6 @@ int WatchdogAVR::sleep(int maxPeriodMS) {
 
   // Chip is now asleep!
 
-  // Once awakened by the watchdog execution resumes here.
-  // Start by disabling sleep.
-  sleep_disable();
 
   // Check if user had the watchdog enabled before sleep and re-enable it.
   if (_wdto != -1)
