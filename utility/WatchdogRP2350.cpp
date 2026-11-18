@@ -2,6 +2,8 @@
     defined(TARGET_RP2350)
 
 #include "WatchdogRP2350/WatchdogRP2350.h"
+#include "SleepyDogRP.h"
+#include <hardware/gpio.h>
 
 /**********************************************************************************************/
 /*!
@@ -22,6 +24,8 @@ int WatchdogRP2350::enable(int maxPeriodMS) {
   watchdog_enable(maxPeriodMS, 1);
 
   _wdto = maxPeriodMS;
+  // remembered so a sleep can re-arm the WDT with the same timeout
+  sleepydog_rp_wdt_note(maxPeriodMS);
   return maxPeriodMS;
 }
 
@@ -42,28 +46,138 @@ void WatchdogRP2350::reset() { watchdog_update(); }
 void WatchdogRP2350::disable() {
   hw_clear_bits(&watchdog_hw->ctrl, WATCHDOG_CTRL_ENABLE_BITS);
   _wdto = -1;
+  sleepydog_rp_wdt_note(0);
 }
 
 /**************************************************************************/
 /*!
-    @brief  Configures the RP2350 to enter a lower power (WFE) sleep
-            for a period of time.
+    @brief  Puts the RP2350 into light sleep for a period of time.
+
+            With arduino-pico >= 6.4.0 this is a real low-power sleep
+            (LowPower.sleepFor(): clocks gated, PLLs stopped, the sketch
+            resumes where it stopped, RAM and pins kept). A watchdog
+            enabled with enable() is paused for the sleep and re-armed with
+            the same timeout afterwards. On older cores, with FreeRTOS or in
+            TinyUSB host-mode builds it falls back to sleep_ms().
     @param    maxPeriodMS
-              Time to sleep the RP2350, in millis.
-    @return The actual period (in milliseconds) that the hardware was
-            asleep will be returned. Otherwise, 0 will be returned if the
-            hardware could not enter the low-power mode.
+              Time to sleep the RP2350, in millis. 0 returns at once.
+    @return The period (in milliseconds) that the hardware was asleep, 0 if
+            it did not sleep.
 */
 /**************************************************************************/
 int WatchdogRP2350::sleep(int maxPeriodMS) {
-  if (maxPeriodMS < 0)
-    return 0;
-
-  // perform a lower power (WFE) sleep (pico-core calls sleep_ms(sleepTime))
-  sleep_ms(maxPeriodMS);
-
-  return maxPeriodMS;
+  return sleepydog_rp_watchdog_sleep(maxPeriodMS);
 }
+
+/**************************************************************************/
+/*!
+    @brief  Sets a callback function to be called upon wake from sleep. Only one
+   callback can be set at a time.
+    @param  cb
+            Pointer to the user-defined callback function.
+*/
+/**************************************************************************/
+void WatchdogRP2350::setWakeCb(WakeCb cb) { _cb_wake = cb; }
+
+#if SLEEPYDOG_RP_LOWPOWER
+// ---------------------------------------------------------------------------
+// Legacy RP2350 sleep API on arduino-pico >= 6.4.0, built on LowPower. The
+// LowPower calls hold the CYW43 driver lock while the clocks are lowered, which
+// should let a Pico 2 W with WiFi connected wake up again (the vendored
+// pico_sleep code did not, see adafruit/Adafruit_SleepyDog#72; not yet
+// confirmed on hardware), and they restore the clocks themselves. The hardware
+// watchdog is paused for the sleep and re-armed.
+// ---------------------------------------------------------------------------
+
+/**************************************************************************/
+/*!
+    @brief  Kept for compatibility. With arduino-pico >= 6.4.0 the clocks are
+            restored by the sleep call itself, so this only re-attaches USB
+            on boards where that applies.
+*/
+/**************************************************************************/
+void WatchdogRP2350::resumeFromSleep() {
+#if defined(USBCON) && !defined(USE_TINYUSB)
+  USBDevice.attach();
+#endif
+}
+
+/**************************************************************************/
+/*!
+    @brief  Gets the duration of the previous sleep cycle, in milliseconds.
+    @return The sleep duration in milliseconds, -1 if it is not known (pin
+            wake from dormant: no clock runs to measure it).
+*/
+/**************************************************************************/
+long WatchdogRP2350::getSleepDuration() {
+  uint32_t ms = 0;
+  sleepydog_rp_wake_reason(&ms);
+  return ms == SLEEPYDOG_SLEPT_UNKNOWN ? -1L : (long)ms;
+}
+
+/**************************************************************************/
+/*!
+    @brief  Sleeps for a specified period of time, then calls the wake
+            callback (setWakeCb()) and returns.
+    @param  max_period_ms
+            Desired sleep period, in milliseconds.
+    @param  is_dormant
+            false (default): light sleep, LowPower.sleepFor(); USB and a
+            connected WiFi station survive it. true: dormant,
+            LowPower.dormantFor() (oscillators stopped, USB drops and
+            re-enumerates; at least 10 ms). Repeated dormant cycles in an
+            Adafruit TinyUSB build need Adafruit TinyUSB >= 3.8.0 (3.7.7, as
+            bundled with core 6.4.0, panics on the 3rd wake).
+*/
+/**************************************************************************/
+void WatchdogRP2350::goToSleepUntil(int max_period_ms, bool is_dormant) {
+  if (max_period_ms < 0)
+    return;
+  if (is_dormant) {
+    sleepydog_rp_legacy_dormant(-1, LOW, (uint32_t)max_period_ms);
+  } else {
+    SleepyDogRPRequest req = {false,
+                              (uint32_t)max_period_ms,
+                              -1,
+                              LOW,
+                              SLEEPYDOG_PULL_KEEP,
+                              SLEEPYDOG_RADIO_IGNORE,
+                              0,
+                              0};
+    sleepydog_rp_sleep(req);
+  }
+  if (_cb_wake)
+    _cb_wake();
+}
+
+/**************************************************************************/
+/*!
+    @brief  Puts the RP2350 into dormant (LowPower.dormantUntilPin()) until
+            the GPIO pin condition, then calls the wake callback and returns.
+            The pin's pull is left as configured (set it with pinMode()
+            first; RP2350-E9: use an external pull-down for a HIGH/RISING
+            wake). USB drops and re-enumerates after the wake.
+    @param  gpio_pin
+            GPIO pin to monitor for wakeup.
+    @param  edge
+            true: wake on an edge, false: wake on a level.
+    @param  high
+            true: rising edge / high level, false: falling edge / low level.
+*/
+/**************************************************************************/
+void WatchdogRP2350::goToSleepUntilPin(uint gpio_pin, bool edge, bool high) {
+  const PinStatus mode = edge ? (high ? RISING : FALLING) : (high ? HIGH : LOW);
+  // an unconfigured RP2350 pad is isolated and could never wake the chip
+  if (gpio_pin < NUM_BANK0_GPIOS &&
+      gpio_get_function(gpio_pin) == GPIO_FUNC_NULL) {
+    gpio_init(gpio_pin);
+  }
+  sleepydog_rp_legacy_dormant((int)gpio_pin, mode, 0);
+  if (_cb_wake)
+    _cb_wake();
+}
+
+#else // !SLEEPYDOG_RP_LOWPOWER: vendored pico_sleep (core < 6.4.0, host mode)
 
 /**************************************************************************/
 /*!
@@ -82,16 +196,6 @@ void WatchdogRP2350::resumeFromSleep() {
   USBDevice.attach();
 #endif
 }
-
-/**************************************************************************/
-/*!
-    @brief  Sets a callback function to be called upon wake from sleep. Only one
-   callback can be set at a time.
-    @param  cb
-            Pointer to the user-defined callback function.
-*/
-/**************************************************************************/
-void WatchdogRP2350::setWakeCb(WakeCb cb) { _cb_wake = cb; }
 
 /**************************************************************************/
 /*!
@@ -157,9 +261,9 @@ void WatchdogRP2350::goToSleepUntil(int max_period_ms, bool is_dormant) {
     @param  gpio_pin
             GPIO pin to monitor for wakeup.
     @param  edge
-            True for rising edge, False for falling edge
+            true: wake on an edge, false: wake on a level.
     @param  high
-            True for active high, False for active low.
+            true: rising edge / high level, false: falling edge / low level.
 */
 /**************************************************************************/
 void WatchdogRP2350::goToSleepUntilPin(uint gpio_pin, bool edge, bool high) {
@@ -188,5 +292,7 @@ bool WatchdogRP2350::startAonTimer() {
   }
   return _aon_timer_started;
 }
+
+#endif // SLEEPYDOG_RP_LOWPOWER
 
 #endif // ARDUINO_ARCH_RP2350 || PICO_RP2350 || TARGET_RP2350
