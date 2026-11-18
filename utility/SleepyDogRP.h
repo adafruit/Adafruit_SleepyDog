@@ -9,7 +9,9 @@
  *    sketch resumes where it stopped, RAM and pins are kept;
  *  - deep sleep on RP2350 = SDK power-down (Pstate) woken by the AON timer
  *    and/or a GPIO; the chip reboots on wake, only a small wake record and
- *    two user words survive (powman scratch registers).
+ *    two user words survive (powman scratch registers);
+ *  - deep sleep on RP2040 = dormant until a GPIO, then a watchdog reboot
+ *    (pin wake only; the wake record lives in watchdog scratch 0).
  *
  * Adafruit invests time and resources providing this open source code,
  * please support Adafruit and open-source hardware by purchasing
