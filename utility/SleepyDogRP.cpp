@@ -225,7 +225,11 @@ static int sdCheck(const SleepyDogRPRequest &r) {
       return SLEEPYDOG_ERR_TOO_SHORT;
     }
 #else
-    return SLEEPYDOG_ERR_UNSUPPORTED; // RP2040: no deep sleep
+    // RP2040 deep sleep wakes on a pin only: a timed dormant needs an
+    // external 32 kHz clock (dormantFor), which the Pico / Pico W lack
+    if (timer) {
+      return SLEEPYDOG_ERR_UNSUPPORTED;
+    }
 #endif
   }
   // Only SLEEPYDOG_RADIO_MUST_BE_OFF refuses. By default a powered WiFi chip
@@ -388,6 +392,62 @@ static void __attribute__((constructor)) sdCaptureDeepWake(void) {
     s_sleptMs = (uint32_t)powman_timer_get_ms() - powman_hw->scratch[2];
   }
 }
+#else // RP2040
+
+// Deep sleep wake record in watchdog scratch 0 (scratch 4..7 belong to the
+// SDK / bootrom, 1..3 hold the persist() words): magic | flags | pin << 8
+#define SD_REC_MAGIC 0x5D040000u
+#define SD_REC_MAGIC_MASK 0xFFFF0000u
+#define SD_REC_ARMED 0x1u
+#define SD_REC_PIN_SHIFT 8
+
+// Deep sleep on RP2040: dormant until the pin (oscillators stopped, unused
+// pins parked in a low-leakage state), then a watchdog reboot, so it behaves
+// like deep sleep elsewhere (and never resumes an Adafruit TinyUSB stack in
+// place).  Only returns on error.
+static int sdDeepRP2040(const SleepyDogRPRequest &r) {
+  uint64_t keep = r.keepPins;
+#if defined(PICO_CYW43_SUPPORTED)
+  // WL_ON keeps driving the (powered-off) WiFi chip's enable low instead of
+  // floating while parked
+  keep |= 1ULL << CYW43_PIN_WL_REG_ON;
+#endif
+  watchdog_hw->scratch[0] =
+      SD_REC_MAGIC | SD_REC_ARMED | ((uint32_t)r.wakePin << SD_REC_PIN_SHIFT);
+  const bool wdt = sdWdtPause();
+  LowPower.keepPins(keep);
+  LowPower.setPinRestore(false); // rebooting anyway: leave them parked
+  const int rc = LowPower.dormantUntilPin((pin_size_t)r.wakePin, r.wakeOn);
+  if (rc == 0) {
+    watchdog_reboot(0, 0, 10);
+    while (true) {
+      tight_loop_contents();
+    }
+  }
+  // dormant refused: put everything back
+  LowPower.setPinRestore(true);
+  LowPower.keepPins(0);
+  watchdog_hw->scratch[0] = 0;
+  sdWdtResume(wdt);
+  sdSetResult(rc, SLEEPYDOG_WAKE_NONE, 0);
+  return rc;
+}
+
+// Runs before setup(): if this boot is SleepyDog's reboot after an RP2040
+// deep sleep, report a pin wake (no clock runs while dormant, so the slept
+// time is unknown).  Accepted only after a watchdog reboot, cleared once read.
+static void __attribute__((constructor)) sdCaptureDeepWake(void) {
+  const uint32_t rec = watchdog_hw->scratch[0];
+  if ((rec & SD_REC_MAGIC_MASK) != SD_REC_MAGIC || !(rec & SD_REC_ARMED)) {
+    return;
+  }
+  watchdog_hw->scratch[0] = 0;
+  if (!watchdog_hw->reason) {
+    return; // power-on / RUN reset since: not a deep sleep wake
+  }
+  s_reason = SLEEPYDOG_WAKE_DEEP_PIN;
+  s_sleptMs = SLEEPYDOG_SLEPT_UNKNOWN;
+}
 #endif // PICO_RP2350
 
 /**************************************************************************/
@@ -413,7 +473,7 @@ int sleepydog_rp_sleep(const SleepyDogRPRequest &r) {
 #if PICO_RP2350
   return sdDeepRP2350(r);
 #else
-  return SLEEPYDOG_ERR_UNSUPPORTED;
+  return sdDeepRP2040(r);
 #endif
 }
 
@@ -432,6 +492,10 @@ uint32_t sleepydog_rp_capabilities(void) {
 #if PICO_RP2350
   caps |= SLEEPYDOG_CAP_DEEP_TIMER | SLEEPYDOG_CAP_DEEP_PIN |
           SLEEPYDOG_CAP_DEEP_PIN_TIMER | SLEEPYDOG_CAP_DEEP_LOW_POWER;
+#else
+  // RP2040: dormant until a pin + reboot. Not DEEP_LOW_POWER: dormant is
+  // about 0.8 mA on a Pico, 1.2 mA on a Pico W, barely below light sleep.
+  caps |= SLEEPYDOG_CAP_DEEP_PIN;
 #endif
   return caps;
 #endif

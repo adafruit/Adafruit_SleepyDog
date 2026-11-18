@@ -7,6 +7,10 @@
 //
 // RP2350: chip powered down (about 0.15 mA for the chip), the slept time is
 // measured. Optionally add cfg.durationMs to also wake on a timer.
+// RP2040: dormant (board about 0.8 mA Pico, 1.2 mA Pico W), then a reboot;
+// pin wake only, and the slept time is unknown (no clock runs). Other unused
+// pins are parked in a low-leakage state; list pins to leave alone in
+// cfg.keepPins.
 //
 // - Pico W / Pico 2 W: power the WiFi chip off first (WiFi.disconnect(),
 //   WiFi.powerOff(), as below) or it keeps drawing about 20 mA through the

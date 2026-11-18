@@ -25,7 +25,7 @@ Needs the [arduino-pico](https://github.com/earlephilhower/arduino-pico) core **
 |---|---|---|
 | **Light sleep**, timer and/or pin | yes: board about 0.8–1.5 mA (3.1 mA while a USB host uses the port) | yes: board about 1.6–4.7 mA |
 | **Deep sleep**, timer | not supported (needs an external 32 kHz clock): `SLEEPYDOG_ERR_UNSUPPORTED` | yes: chip powered down (about 0.15 mA), reboots on wake |
-| **Deep sleep**, pin | not supported: `SLEEPYDOG_ERR_UNSUPPORTED` | yes: powered down, reboots on wake |
+| **Deep sleep**, pin | yes: dormant (board about 0.8 mA Pico, 1.2 mA Pico W), reboots on wake; slept time unknown | yes: powered down, reboots on wake |
 | **Deep sleep**, pin or timer | no | yes |
 
 * **Light sleep** gates the clocks and stops the PLLs. The sketch resumes right after the call. RAM and pin states are kept, and so are USB (while a host uses it) and a connected WiFi station. Pins are never parked.
