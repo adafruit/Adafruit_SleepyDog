@@ -34,8 +34,7 @@ public:
   WatchdogRP2350() : _wdto(-1), _aon_timer_started(false){};
   // Watchdog API
   int enable(int maxPeriodMS = 0);
-  void disable()
-      __attribute__((error("RP2350 WDT cannot be disabled once enabled")));
+  void disable();
   void reset();
   // Low-power ("sleep") mode API
   int sleep(

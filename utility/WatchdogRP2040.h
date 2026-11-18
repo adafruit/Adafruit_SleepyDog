@@ -28,8 +28,7 @@ class WatchdogRP2040 {
 public:
   WatchdogRP2040() : _wdto(-1){};
   int enable(int maxPeriodMS = 0);
-  void disable()
-      __attribute__((error("RP2040 WDT cannot be disabled once enabled")));
+  void disable();
   void reset();
   int sleep(int maxPeriodMS = 0);
 

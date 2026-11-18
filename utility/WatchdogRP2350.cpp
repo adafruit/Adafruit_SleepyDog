@@ -35,10 +35,14 @@ void WatchdogRP2350::reset() { watchdog_update(); }
 
 /**************************************************************************/
 /*!
-    @brief  Once enabled, the RP2350's Watchdog Timer can NOT be disabled.
+    @brief  Disables the RP2350's hardware watchdog timer (clears
+            WATCHDOG_CTRL.ENABLE, the same as the SDK's watchdog_disable()).
 */
 /**************************************************************************/
-void WatchdogRP2350::disable() {}
+void WatchdogRP2350::disable() {
+  hw_clear_bits(&watchdog_hw->ctrl, WATCHDOG_CTRL_ENABLE_BITS);
+  _wdto = -1;
+}
 
 /**************************************************************************/
 /*!
