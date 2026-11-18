@@ -26,10 +26,11 @@ jobs:
           - picow_rp2350_tinyusb
           - feather_rp2040
           - feather_rp2350
-          # TEMPORARY, to show stock core 6.4.0 cannot link TinyUSB host mode
-          - pico_rp2040_tinyusb_host
-          - pico_rp2350_tinyusb_host
-          - picow_rp2350_tinyusb_host
+          # No *_tinyusb_host targets: stock core 6.4.0 cannot link TinyUSB
+          # host mode at all (libpico's TinyUSB objects collide with Adafruit
+          # TinyUSB, even for BasicUsage, which then uses no LowPower; see
+          # earlephilhower/arduino-pico#3639). Add them back once a core with
+          # that fix (and LowPower's weak tud_* stubs) is released.
 
     steps:
     - uses: actions/setup-python@v4
