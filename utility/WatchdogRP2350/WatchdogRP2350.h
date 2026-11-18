@@ -16,6 +16,7 @@
 #define WATCHDOGRP2350_H_
 
 #include "../SleepyDogRPGate.h"
+#include "../SleepyDogRPSleep.h"
 #include <hardware/watchdog.h>
 #include <pico/time.h>
 #if !SLEEPYDOG_RP_LOWPOWER
@@ -33,8 +34,10 @@ typedef void (*WakeCb)(void);
             RP2350's hardware watchdog timer and low-power sleep functionality.
 */
 /**************************************************************************/
-class WatchdogRP2350 {
+class WatchdogRP2350 : public SleepyDogRPSleep {
 public:
+  // sleep(const SleepyDogConfig &) etc. from SleepyDogRPSleep
+  using SleepyDogRPSleep::sleep;
   WatchdogRP2350() : _wdto(-1) {}
   // Watchdog API
   int enable(int maxPeriodMS = 0);
