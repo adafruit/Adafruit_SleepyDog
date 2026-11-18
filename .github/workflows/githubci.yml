@@ -2,10 +2,35 @@ name: Arduino Library CI
 
 on: [pull_request, push, repository_dispatch]
 
+env:
+  RP2040_INDEX: https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
+
 jobs:
-  build:
+  # Raspberry Pi RP2040 / RP2350 (arduino-pico): one check per board / USB
+  # stack, every RP example, on the latest core (asserted >= 6.4.0, the first
+  # with the LowPower library the RP sleep engine is built on).
+  rp2:
+    name: rp2 ${{ matrix.platform }}
     runs-on: ubuntu-latest
-    
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - pico_rp2040
+          - pico_rp2040_tinyusb
+          - pico_rp2350
+          - pico_rp2350_tinyusb
+          - picow_rp2040
+          - picow_rp2040_tinyusb
+          - picow_rp2350
+          - picow_rp2350_tinyusb
+          - feather_rp2040
+          - feather_rp2350
+          # TEMPORARY, to show stock core 6.4.0 cannot link TinyUSB host mode
+          - pico_rp2040_tinyusb_host
+          - pico_rp2350_tinyusb_host
+          - picow_rp2350_tinyusb_host
+
     steps:
     - uses: actions/setup-python@v4
       with:
@@ -20,21 +45,63 @@ jobs:
     - name: pre-install
       run: bash ci/actions_install.sh
 
-    - name: Install extra Arduino libraries
+    - name: Install rp2040 core (must be >= 6.4.0)
       run: |
-        git clone --quiet https://github.com/adafruit/Adafruit_TinyUSB_Arduino /home/runner/Arduino/libraries/Adafruit_TinyUSB_Arduino
+        arduino-cli core update-index --additional-urls "$RP2040_INDEX"
+        arduino-cli core install rp2040:rp2040 --additional-urls "$RP2040_INDEX"
+        ver=$(arduino-cli core list | awk '$1=="rp2040:rp2040"{print $2}')
+        echo "rp2040:rp2040 core version: $ver"
+        if [ "$(printf '%s\n' 6.4.0 "$ver" | sort -V | head -n1)" != "6.4.0" ]; then
+          echo "::error::rp2040:rp2040 core $ver is older than 6.4.0 (no LowPower library)"
+          exit 1
+        fi
+
+    # Adafruit TinyUSB 3.8.0 fixes the spinlock leak that makes the 3rd
+    # dormant wake panic with 3.7.7 (bundled with core 6.4.0). Installed by
+    # git clone, never through arduino-cli lib install / dependencies, which
+    # can pull 3.7.7 back in.
+    - name: Install Adafruit TinyUSB 3.8.0
+      if: contains(matrix.platform, 'tinyusb')
+      run: |
+        git clone --quiet --depth 1 --branch 3.8.0 https://github.com/adafruit/Adafruit_TinyUSB_Arduino "$HOME/Arduino/libraries/Adafruit_TinyUSB_Arduino"
+        grep '^version=' "$HOME/Arduino/libraries/Adafruit_TinyUSB_Arduino/library.properties"
+
+    - name: Build examples
+      run: python3 ci/build_platform.py ${{ matrix.platform }} --build_timeout 300
+
+    # build_platform.py hides compiler output on success: show which library
+    # versions a TinyUSB build actually used. Note the core's boards.txt also
+    # adds -I<core>/libraries/Adafruit_TinyUSB_Arduino/src/arduino (the
+    # bundled copy) to every TinyUSB build.
+    - name: Show libraries used
+      if: contains(matrix.platform, 'tinyusb')
+      run: |
+        arduino-cli lib list
+        fqbn=$(python3 -c "import sys; sys.path.insert(0, 'ci'); from all_platforms import ALL_PLATFORMS; print(ALL_PLATFORMS['${{ matrix.platform }}'][0])")
+        arduino-cli compile -v --fqbn "$fqbn" examples/BasicUsage 2>&1 | grep -E 'Using library|Used library|Adafruit TinyUSB|Adafruit_TinyUSB_Arduino +[0-9]|LowPower' | sort -u
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+    - uses: actions/checkout@v3
+    - uses: actions/checkout@v3
+      with:
+         repository: adafruit/ci-arduino
+         path: ci
+         ref: ci-wippersnapper
+
+    - name: pre-install
+      run: bash ci/actions_install.sh
 
     - name: test platforms
-      run: |
-        echo "running from $(pwd)"
-        echo "arduino-cli available at: $(which arduino-cli)"
-        python3 ci/build_platform.py rp2040_platforms
-        for platform in pico_rp2040_tinyusb pico_rp2040_tinyusb_host pico_rp2350 pico_rp2350_tinyusb pico_rp2350_tinyusb_host picow_rp2040 picow_rp2040_tinyusb main_platforms; do
-          python3 ci/build_platform.py $platform --skip-uninstall
-        done
+      run: python3 ci/build_platform.py main_platforms
 
     - name: clang
-      run: python3 ci/run-clang-format.py -e "ci/*" -e "bin/*" -r . 
+      run: python3 ci/run-clang-format.py -e "ci/*" -e "bin/*" -r .
 
     - name: doxygen
       env:
