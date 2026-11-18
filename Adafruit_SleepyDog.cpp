@@ -22,6 +22,8 @@
  * Partial support for Teensy 3.X and LC (watchdog, no sleep).
  * ESP32/ESP32-S2
  * ESP8266
+ * Raspberry Pi RP2040 / RP2350 (arduino-pico core): watchdog, plus light
+ * sleep and RP2350 deep sleep with timer / GPIO wake on core >= 6.4.0.
  *
  * Adafruit Trinket and other boards using ATtiny MCUs are NOT supported.
  */
