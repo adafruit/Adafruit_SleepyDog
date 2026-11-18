@@ -26,7 +26,7 @@
 /**************************************************************************/
 class WatchdogRP2040 {
 public:
-  WatchdogRP2040() : _wdto(-1){};
+  WatchdogRP2040() : _wdto(-1) {};
   int enable(int maxPeriodMS = 0);
   void disable();
   void reset();
