@@ -3,8 +3,12 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#if defined(ARDUINO_ARCH_RP2350) || defined(PICO_RP2350) ||                    \
-    defined(TARGET_RP2350)
+// Vendored pico_sleep, used only by the legacy RP2350 API on cores without
+// LowPower (< 6.4.0) or in TinyUSB host-mode builds; see SleepyDogRPGate.h
+#include "SleepyDogRPGate.h"
+#if (defined(ARDUINO_ARCH_RP2350) || defined(PICO_RP2350) ||                   \
+     defined(TARGET_RP2350)) &&                                                \
+    !SLEEPYDOG_RP_LOWPOWER
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -32,7 +36,7 @@
 #endif
 
 #if !PICO_RP2040
-#include "hardware/powman.h"
+#include "WatchdogRP2350/hardware_powman/include/hardware/powman.h"
 #endif
 
 // The difference between sleep and dormant is that ALL clocks are stopped in

@@ -27,7 +27,7 @@
 /**************************************************************************/
 class WatchdogESP8266 {
 public:
-  WatchdogESP8266() : _wdto(-1){};
+  WatchdogESP8266() : _wdto(-1) {};
   int enable(int maxPeriodMS = 0);
   void reset();
   void disable();
