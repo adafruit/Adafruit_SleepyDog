@@ -1,6 +1,7 @@
 #if defined(ARDUINO_ARCH_RP2040)
 
 #include "WatchdogRP2040.h"
+#include "SleepyDogRP.h"
 
 /**********************************************************************************************/
 /*!
@@ -21,6 +22,8 @@ int WatchdogRP2040::enable(int maxPeriodMS) {
   watchdog_enable(maxPeriodMS, 1);
 
   _wdto = maxPeriodMS;
+  // remembered so a sleep can re-arm the WDT with the same timeout
+  sleepydog_rp_wdt_note(maxPeriodMS);
   return maxPeriodMS;
 }
 
@@ -34,30 +37,34 @@ void WatchdogRP2040::reset() { watchdog_update(); }
 
 /**************************************************************************/
 /*!
-    @brief  Once enabled, the RP2040's Watchdog Timer can NOT be disabled.
+    @brief  Disables the RP2040's hardware watchdog timer (clears
+            WATCHDOG_CTRL.ENABLE, the same as the SDK's watchdog_disable()).
 */
 /**************************************************************************/
-void WatchdogRP2040::disable() {}
+void WatchdogRP2040::disable() {
+  hw_clear_bits(&watchdog_hw->ctrl, WATCHDOG_CTRL_ENABLE_BITS);
+  _wdto = -1;
+  sleepydog_rp_wdt_note(0);
+}
 
 /**************************************************************************/
 /*!
-    @brief  Configures the RP2040 to enter a lower power (WFE) sleep
-            for a period of time.
+    @brief  Puts the RP2040 into light sleep for a period of time.
+
+            With arduino-pico >= 6.4.0 this is a real low-power sleep
+            (LowPower.sleepFor(): clocks gated, PLLs stopped, the sketch
+            resumes where it stopped, RAM and pins kept). A watchdog
+            enabled with enable() is paused for the sleep and re-armed with
+            the same timeout afterwards. On older cores, with FreeRTOS or in
+            TinyUSB host-mode builds it falls back to sleep_ms().
     @param    maxPeriodMS
-              Time to sleep the RP2040, in millis.
-    @return The actual period (in milliseconds) that the hardware was
-            asleep will be returned. Otherwise, 0 will be returned if the
-            hardware could not enter the low-power mode.
+              Time to sleep the RP2040, in millis. 0 returns at once.
+    @return The period (in milliseconds) that the hardware was asleep, 0 if
+            it did not sleep.
 */
 /**************************************************************************/
 int WatchdogRP2040::sleep(int maxPeriodMS) {
-  if (maxPeriodMS < 0)
-    return 0;
-
-  // perform a lower power (WFE) sleep (pico-core calls sleep_ms(sleepTime))
-  sleep_ms(maxPeriodMS);
-
-  return maxPeriodMS;
+  return sleepydog_rp_watchdog_sleep(maxPeriodMS);
 }
 
 #endif // ARDUINO_ARCH_RP2040

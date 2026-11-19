@@ -25,7 +25,7 @@
 /**************************************************************************/
 class WatchdogESP32 {
 public:
-  WatchdogESP32() : _wdto(-1){};
+  WatchdogESP32() : _wdto(-1) {};
   int enable(int maxPeriodMS = 0);
   void reset();
   void disable();

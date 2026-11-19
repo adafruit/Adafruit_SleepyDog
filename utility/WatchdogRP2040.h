@@ -15,6 +15,7 @@
 #ifndef WATCHDOGRP2040_H_
 #define WATCHDOGRP2040_H_
 
+#include "SleepyDogRPSleep.h"
 #include <hardware/watchdog.h>
 #include <pico/time.h>
 
@@ -24,12 +25,13 @@
             RP2040's hardware watchdog timer
 */
 /**************************************************************************/
-class WatchdogRP2040 {
+class WatchdogRP2040 : public SleepyDogRPSleep {
 public:
-  WatchdogRP2040() : _wdto(-1){};
+  // sleep(const SleepyDogConfig &) etc. from SleepyDogRPSleep
+  using SleepyDogRPSleep::sleep;
+  WatchdogRP2040() : _wdto(-1) {};
   int enable(int maxPeriodMS = 0);
-  void disable()
-      __attribute__((error("RP2040 WDT cannot be disabled once enabled")));
+  void disable();
   void reset();
   int sleep(int maxPeriodMS = 0);
 
