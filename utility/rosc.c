@@ -3,8 +3,12 @@
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#if defined(ARDUINO_ARCH_RP2350) || defined(PICO_RP2350) ||                    \
-    defined(TARGET_RP2350)
+// Vendored pico_sleep, used only by the legacy RP2350 API on cores without
+// LowPower (< 6.4.0) or in TinyUSB host-mode builds; see SleepyDogRPGate.h
+#include "SleepyDogRPGate.h"
+#if (defined(ARDUINO_ARCH_RP2350) || defined(PICO_RP2350) ||                   \
+     defined(TARGET_RP2350)) &&                                                \
+    !SLEEPYDOG_RP_LOWPOWER
 #include "pico.h"
 
 // For MHZ definitions etc
